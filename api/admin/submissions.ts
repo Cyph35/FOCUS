@@ -14,6 +14,7 @@ export default async function handler(req: any, res: any) {
     return sendJson(res, 200, submissions);
   } catch (error) {
     console.error('Failed to read submissions:', error);
-    return sendJson(res, 500, { error: 'Failed to read submissions' });
+    const message = error instanceof Error ? error.message : String(error);
+    return sendJson(res, 500, { error: 'Failed to read submissions', details: message });
   }
 }
