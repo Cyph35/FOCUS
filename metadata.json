@@ -1,0 +1,8 @@
+{
+  "name": "Focus Study Fatigue Indicator",
+  "description": "A study fatigue indicator landing page through a short questionnaire assessment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
