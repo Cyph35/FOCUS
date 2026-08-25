@@ -1,5 +1,5 @@
-import { saveEvaluation, sendJson, verifyEvaluationToken } from './_lib';
-import { parseEvaluationPayload, parseEvaluationToken } from './_validation';
+import { saveEvaluation, sendJson, verifyEvaluationToken } from './_lib.js';
+import { parseEvaluationPayload, parseEvaluationToken } from './_validation.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
-import type { SubmitPayload } from './_validation';
+import type { SubmitPayload } from './_validation.js';
 
 export interface SubmissionRecord {
   response_id: string;

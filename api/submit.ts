@@ -1,5 +1,5 @@
-import { buildSubmissionRecord, calculateScore, createEvaluationToken, saveSubmission, sendJson } from './_lib';
-import { parseSubmitPayload } from './_validation';
+import { buildSubmissionRecord, calculateScore, createEvaluationToken, saveSubmission, sendJson } from './_lib.js';
+import { parseSubmitPayload } from './_validation.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

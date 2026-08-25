@@ -1,4 +1,4 @@
-import { getAdminCredentials, isAdminAuthorized, sendJson } from '../_lib';
+import { getAdminCredentials, isAdminAuthorized, sendJson } from '../_lib.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
