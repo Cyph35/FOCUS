@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Menu, Lightbulb, Lock, Shield, ArrowLeft, ArrowRight, Check, ChevronLeft, Smartphone, Wind, Moon, Sun, User, X, Search, Users, CheckCircle, Clock, Star, Info, TrendingUp, Download, Filter, Table, ChevronRight, AlertCircle, MoreVertical, ArrowUp, ArrowDown, FastForward, Sparkles, Heart, Brain, Coffee, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Menu, Lightbulb, Lock, Shield, ArrowLeft, ArrowRight, Check, ChevronLeft, Smartphone, Wind, Moon, Sun, User, X, Search, Users, CheckCircle, Clock, Star, Info, TrendingUp, Download, Filter, Table, ChevronRight, AlertCircle, MoreVertical, ArrowUp, ArrowDown, FastForward, Sparkles, Heart, Brain, Coffee, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import SkeletalResultsLoader from './components/SkeletalResultsLoader';
@@ -290,6 +290,7 @@ export default function App() {
   const [adminInputPassword, setAdminInputPassword] = useState('');
   const [adminInputUsername, setAdminInputUsername] = useState('');
   const [adminLoginError, setAdminLoginError] = useState('');
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [dbRespondents, setDbRespondents] = useState<any[]>([]);
   const [dbReports, setDbReports] = useState<any[]>([]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);
@@ -405,7 +406,7 @@ export default function App() {
       <CozyBackground />
       <style>{`
         .dark {
-          background-color: #1E1A18 !important;
+          background-color: #1E1A18 !important; 
           color: #EAE6DF !important;
         }
         .dark .bg-white, .dark .sm\\:bg-white, .dark .md\\:bg-white, .dark .bg-white\\/60, .dark .bg-white\\/80 { background-color: #2A2421 !important; }
@@ -2394,13 +2395,24 @@ export default function App() {
                   <label className="text-[11px] font-bold tracking-wider text-[#594A42]/70 uppercase">
                     Password
                   </label>
-                  <input 
-                    type="password" 
-                    value={adminInputPassword}
-                    onChange={(e) => setAdminInputPassword(e.target.value)}
-                    placeholder="Enter password" 
-                    className="w-full px-5 py-3.5 bg-[#F4F0E6] rounded-xl text-sm outline-none border border-transparent focus:border-[#594A42] transition-colors placeholder:text-[#594A42]/40 text-[#594A42] font-semibold"
-                  />
+                  <div className="relative">
+                    <input 
+                      type={showAdminPassword ? 'text' : 'password'} 
+                      value={adminInputPassword}
+                      onChange={(e) => setAdminInputPassword(e.target.value)}
+                      placeholder="Enter password" 
+                      className="w-full px-5 py-3.5 pr-12 bg-[#F4F0E6] rounded-xl text-sm outline-none border border-transparent focus:border-[#594A42] transition-colors placeholder:text-[#594A42]/40 text-[#594A42] font-semibold"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowAdminPassword(prev => !prev)}
+                      aria-label={showAdminPassword ? 'Hide password' : 'Show password'}
+                      aria-pressed={showAdminPassword}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#594A42]/50 hover:text-[#594A42] transition-colors cursor-pointer"
+                    >
+                      {showAdminPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
                 
                 <button 
