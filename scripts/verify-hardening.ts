@@ -67,6 +67,13 @@ const validSubmit = {
 const parsedSubmit = parseSubmitPayload(validSubmit);
 assert(parsedSubmit.ok, 'Expected valid submit payload to parse');
 
+const parsedEngineering = parseSubmitPayload({ ...validSubmit, grade_level: '11 Academic-Engineering' });
+assert(parsedEngineering.ok, 'Expected 11 Academic-Engineering to parse');
+const parsedMedical = parseSubmitPayload({ ...validSubmit, grade_level: '11 Academic-Medical' });
+assert(parsedMedical.ok, 'Expected 11 Academic-Medical to parse');
+const invalidStrand = parseSubmitPayload({ ...validSubmit, grade_level: '11 Academic' });
+assert(!invalidStrand.ok, 'Expected unlisted grade_level to fail');
+
 const invalidScore = parseSubmitPayload({ ...validSubmit, pf1: 9 });
 assert(!invalidScore.ok, 'Expected out-of-range pf1 to fail');
 

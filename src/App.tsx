@@ -818,7 +818,9 @@ export default function App() {
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     {[
                       { value: 'Grade 11', label: 'Grade 11 STEM' },
-                      { value: 'Grade 12', label: 'Grade 12 STEM' }
+                      { value: 'Grade 12', label: 'Grade 12 STEM' },
+                      { value: '11 Academic-Engineering', label: '11 Academic-Engineering' },
+                      { value: '11 Academic-Medical', label: '11 Academic-Medical' }
                     ].map(grade => (
                       <button
                         key={grade.value}
@@ -1869,7 +1871,7 @@ export default function App() {
                         {dbRespondents.length === 0 ? (
                           <div className="text-sm font-semibold text-[#594A42]/60 text-center py-10">No data available</div>
                         ) : (
-                          ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12', 'College'].map(grade => {
+                          ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', '11 Academic-Engineering', '11 Academic-Medical', 'Grade 12', 'College'].map(grade => {
                             const count = dbRespondents.filter(r => r.grade === grade).length;
                             if (count === 0) return null;
                             const percentage = Math.round((count / dbRespondents.length) * 100);

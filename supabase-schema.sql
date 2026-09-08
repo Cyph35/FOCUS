@@ -51,7 +51,8 @@ create table if not exists public.submissions (
   constraint submissions_u2_range check (u2 between 1 and 5),
   constraint submissions_r1_range check (r1 between 1 and 5),
   constraint submissions_r2_range check (r2 between 1 and 5),
-  constraint submissions_result_percent_range check (result_percent between 0 and 100)
+  constraint submissions_result_percent_range check (result_percent between 0 and 100),
+  constraint submissions_grade_level_values check (grade_level in ('Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12', 'College', '11 Academic-Engineering', '11 Academic-Medical'))
 );
 
 create index if not exists submissions_submitted_at_idx
