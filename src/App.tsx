@@ -11,6 +11,16 @@ import SkeletalResultsLoader from './components/SkeletalResultsLoader';
 import CozyBackground from './components/CozyBackground';
 import { AnimatedPercentage, CircularProgress } from './components/AnimatedPercentage';
 import PercentageBreakdownCard from './components/PercentageBreakdownCard';
+import CitationTooltip from './components/CitationTooltip';
+
+// Verbatim "Adapted from" source lines printed in the PDF questionnaire.
+const CITATION_SOURCES = {
+  partI: 'Adapted from: Standard Educational Research Profiling Frameworks and Research Scope (Uy et al., 2026; Statement of the Problem 1).',
+  partIIPhysical: 'Adapted from: The Chalder Fatigue Scale (CFQ-11) (Chalder et al., 1993) and the Multidimensional Fatigue Inventory (MFI-20) Physical Fatigue Subscale (Smets et al., 1995).',
+  partIIICognitive: 'Adapted from: The Chalder Fatigue Scale (CFQ-11) Mental Fatigue Subscale (Chalder et al., 1993) and the PedsQL Multidimensional Fatigue Scale Cognitive Fatigue Subscale (Taminskienė et al., 2025).',
+  partIVLifestyle: 'Adapted from: Scope and Delimitations Framework (Uy et al., 2026), with baseline sleep and study habit indicators grounded in Quirante et al. (2024/2025) and Bouloukaki et al. (2023).',
+  partVEvaluation: 'Adapted from: Software Quality Evaluation Standards (ISO/IEC 25010 Framework) and Mobile/Web-Based Health Assessment Criteria (Müssener et al., 2020; Uy et al., 2026).',
+} as const;
 
 
 
@@ -749,7 +759,7 @@ export default function App() {
             <main className="w-full max-w-3xl bg-white rounded-3xl shadow-[0_8px_40px_-15px_rgba(0,0,0,0.05)] p-8 sm:p-12 md:p-16 flex flex-col items-center relative z-10">
               <div className="text-center mb-10 md:mb-12 max-w-lg">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold tracking-wide text-[#594A42] mb-4 uppercase" style={{ fontVariant: 'small-caps' }}>
-                  Part I: Demographic Profile
+                  Part I: Demographic Profile{' '}<CitationTooltip citation={CITATION_SOURCES.partI} />
                 </h1>
                 <p className="text-[#594A42]/80 text-sm md:text-base font-medium leading-relaxed">
                   Please provide a few basic details to help us contextualize your assessment results.
@@ -898,7 +908,7 @@ export default function App() {
             <main className="w-full max-w-4xl bg-white rounded-3xl shadow-[0_8px_40px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-10 md:p-14 flex flex-col items-center relative z-10">
               <div className="text-center mb-10 max-w-xl">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold tracking-wide text-[#594A42] mb-4 uppercase" style={{ fontVariant: 'small-caps' }}>
-                  Part II: Physical Fatigue
+                  Part II: Physical Fatigue{' '}<CitationTooltip citation={CITATION_SOURCES.partIIPhysical} />
                 </h1>
                 <p className="text-[#594A42]/80 text-sm md:text-base font-medium leading-relaxed">
                   Please reflect on how you feel after completing your assessment tests.
@@ -1006,7 +1016,7 @@ export default function App() {
             <main className="w-full max-w-4xl bg-white rounded-3xl shadow-[0_8px_40px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-10 md:p-14 flex flex-col items-center relative z-10">
               <div className="text-center mb-10 max-w-xl">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold tracking-wide text-[#594A42] mb-4 uppercase" style={{ fontVariant: 'small-caps' }}>
-                  Part III: Cognitive/Mental Fatigue
+                  Part III: Cognitive/Mental Fatigue{' '}<CitationTooltip citation={CITATION_SOURCES.partIIICognitive} />
                 </h1>
                 <p className="text-[#594A42]/80 text-sm md:text-base font-medium leading-relaxed">
                   Please reflect on how you feel after completing your assessment tests.
@@ -1114,7 +1124,7 @@ export default function App() {
             <main className="w-full max-w-4xl bg-white rounded-3xl shadow-[0_8px_40px_-15px_rgba(0,0,0,0.05)] p-6 sm:p-10 md:p-14 flex flex-col items-center relative z-10">
               <div className="text-center mb-10 max-w-xl">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold tracking-wide text-[#594A42] mb-4 uppercase" style={{ fontVariant: 'small-caps' }}>
-                  Part IV: Context & Lifestyle
+                  Part IV: Context & Lifestyle{' '}<CitationTooltip citation={CITATION_SOURCES.partIVLifestyle} />
                 </h1>
                 <p className="text-[#594A42]/80 text-sm md:text-base font-medium leading-relaxed">
                   Please provide some context about your daily habits and lifestyle.
@@ -1218,7 +1228,7 @@ export default function App() {
                   <span>System Evaluation & Feedback</span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-sans font-bold text-[#332A25] mb-3 uppercase tracking-wide">
-                  EVALUATE OUR SYSTEM
+                  EVALUATE OUR SYSTEM{' '}<CitationTooltip citation={CITATION_SOURCES.partVEvaluation} />
                 </h1>
                 <p className="text-[#594A42]/90 text-sm md:text-base font-medium leading-relaxed max-w-md mx-auto">
                   Please rate your experience with the FOCUS web application based on the statements below. Your feedback will help us improve and refine the system.
