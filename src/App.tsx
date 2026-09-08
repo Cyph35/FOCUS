@@ -31,34 +31,52 @@ const cognitiveQuestions = [
 ];
 
 const pfOptions = [
-  { value: 1, label: '1 - Less than usual' },
-  { value: 2, label: '2 - No more than usual' },
-  { value: 3, label: '3 - More than usual' },
-  { value: 4, label: '4 - Much more than usual' }
+  { value: 1, label: '1 = Less than usual' },
+  { value: 2, label: '2 = No more than usual' },
+  { value: 3, label: '3 = More than usual' },
+  { value: 4, label: '4 = Much more than usual' }
 ];
 
 const cfOptions = [
-  { value: 1, label: '1 - Better/Less than usual' },
-  { value: 2, label: '2 - No worse than usual' },
-  { value: 3, label: '3 - Worse than usual' },
-  { value: 4, label: '4 - Much worse than usual' }
+  { value: 1, label: '1 = Less than usual' },
+  { value: 2, label: '2 = No more than usual' },
+  { value: 3, label: '3 = More than usual' },
+  { value: 4, label: '4 = Much more than usual' }
 ];
 
 const lifestyleQuestions = [
   {
     id: 'sleep',
-    text: 'How many hours of sleep did you get last night?',
-    options: ['Less than 5 hours', '5–6 hours', '6–7 hours', '7–8 hours', 'More than 8 hours']
+    text: 'On average, how many hours of sleep do you get during assessment nights?',
+    options: [
+      { label: 'Less than 5 hours', value: 'Less than 5 hours' },
+      { label: '5–6 hours', value: '5–6 hours' },
+      { label: '6–7 hours', value: '6–7 hours' },
+      { label: '7–8 hours', value: '7–8 hours' },
+      { label: 'More than 8 hours', value: 'More than 8 hours' }
+    ]
   },
   {
     id: 'breaks',
-    text: 'How often do you take breaks during long study sessions?',
-    options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always']
+    text: 'How often do you take short breaks while studying for long periods during assessment preparation?',
+    options: [
+      { label: 'Never', value: 'Never' },
+      { label: 'Rarely', value: 'Rarely' },
+      { label: 'Sometimes', value: 'Sometimes' },
+      { label: 'Often', value: 'Often' },
+      { label: 'Always', value: 'Always' }
+    ]
   },
   {
     id: 'devices',
-    text: 'How long do you usually use electronic devices before going to sleep?',
-    options: ['Less than 30 mins', '30m–1h', '1–2 hours', '2–3 hours', '3+ hours']
+    text: 'How much time do you spend using social media or entertainment apps before going to sleep during assessment periods?',
+    options: [
+      { label: 'Less than 30 minutes', value: 'Less than 30 mins' },
+      { label: '30 minutes–1 hour', value: '30m–1h' },
+      { label: '1–2 hours', value: '1–2 hours' },
+      { label: '2–3 hours', value: '2–3 hours' },
+      { label: 'More than 3 hours', value: '3+ hours' }
+    ]
   }
 ];
 
@@ -743,17 +761,21 @@ export default function App() {
                 <div className="flex flex-col gap-3">
                   <label className="text-sm font-bold text-[#594A42]">Age Bracket</label>
                   <div className="grid grid-cols-3 gap-3 sm:gap-4">
-                    {['15-16', '17-18', '19+'].map(age => (
+                    {[
+                      { value: '15-16', label: '15–16 years old' },
+                      { value: '17-18', label: '17–18 years old' },
+                      { value: '19+', label: '19 years old or above' }
+                    ].map(age => (
                       <button
-                        key={age}
-                        onClick={() => setAgeBracket(age)}
+                        key={age.value}
+                        onClick={() => setAgeBracket(age.value)}
                         className={`py-3 sm:py-4 px-2 rounded-xl border text-sm font-medium transition-colors cursor-pointer ${
-                          ageBracket === age 
+                          ageBracket === age.value 
                             ? 'border-[#594A42] bg-[#F4F0E6] text-[#594A42]' 
                             : 'border-[#E8E3D9] bg-white text-[#594A42] hover:border-[#C5BDB6]'
                         }`}
                       >
-                        {age}
+                        {age.label}
                       </button>
                     ))}
                   </div>
@@ -794,17 +816,20 @@ export default function App() {
                 <div className="flex flex-col gap-3">
                   <label className="text-sm font-bold text-[#594A42]">Grade Level</label>
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                    {['Grade 11', 'Grade 12'].map(grade => (
+                    {[
+                      { value: 'Grade 11', label: 'Grade 11 STEM' },
+                      { value: 'Grade 12', label: 'Grade 12 STEM' }
+                    ].map(grade => (
                       <button
-                        key={grade}
-                        onClick={() => setGradeLevel(grade)}
+                        key={grade.value}
+                        onClick={() => setGradeLevel(grade.value)}
                         className={`py-3 sm:py-4 px-2 rounded-xl border text-sm font-medium transition-colors cursor-pointer ${
-                          gradeLevel === grade 
+                          gradeLevel === grade.value 
                             ? 'border-[#594A42] bg-[#F4F0E6] text-[#594A42]' 
                             : 'border-[#E8E3D9] bg-white text-[#594A42] hover:border-[#C5BDB6]'
                         }`}
                       >
-                        {grade}
+                        {grade.label}
                       </button>
                     ))}
                   </div>
@@ -1103,27 +1128,27 @@ export default function App() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                       {q.options.map((opt) => (
                         <label 
-                          key={opt}
+                          key={opt.value}
                           className={`flex items-start sm:items-center gap-3 p-4 sm:p-3 rounded-xl border cursor-pointer transition-colors ${
-                            lifestyleAnswers[q.id] === opt 
+                            lifestyleAnswers[q.id] === opt.value 
                               ? 'border-[#594A42] bg-[#F4F0E6]' 
                               : 'border-[#E8E3D9] bg-white hover:border-[#C5BDB6]'
                           }`}
                         >
                           <div className={`w-4 h-4 shrink-0 rounded-full border flex items-center justify-center mt-0.5 sm:mt-0 ${
-                            lifestyleAnswers[q.id] === opt ? 'border-[#594A42]' : 'border-[#C5BDB6]'
+                            lifestyleAnswers[q.id] === opt.value ? 'border-[#594A42]' : 'border-[#C5BDB6]'
                           }`}>
-                            {lifestyleAnswers[q.id] === opt && <div className="w-2 h-2 rounded-full bg-[#594A42]" />}
+                            {lifestyleAnswers[q.id] === opt.value && <div className="w-2 h-2 rounded-full bg-[#594A42]" />}
                           </div>
                           <input 
                             type="radio" 
                             name={q.id} 
                             className="hidden" 
-                            checked={lifestyleAnswers[q.id] === opt}
-                            onChange={() => setLifestyleAnswers(prev => ({ ...prev, [q.id]: opt }))}
+                            checked={lifestyleAnswers[q.id] === opt.value}
+                            onChange={() => setLifestyleAnswers(prev => ({ ...prev, [q.id]: opt.value }))}
                           />
                           <span className="text-xs sm:text-[13px] font-bold text-[#594A42] leading-tight whitespace-pre-wrap">
-                            {opt}
+                            {opt.label}
                           </span>
                         </label>
                       ))}
