@@ -12,6 +12,7 @@ import CozyBackground from './components/CozyBackground';
 import { AnimatedPercentage, CircularProgress } from './components/AnimatedPercentage';
 import PercentageBreakdownCard from './components/PercentageBreakdownCard';
 import CitationTooltip from './components/CitationTooltip';
+import QuestionnaireProgress from './components/QuestionnaireProgress';
 
 // Verbatim "Adapted from" source lines printed in the PDF questionnaire.
 const CITATION_SOURCES = {
@@ -746,12 +747,7 @@ export default function App() {
               </div>
               
               <div className="flex flex-col items-center w-full max-w-sm mt-4">
-                <span className="text-[10px] sm:text-xs tracking-[0.15em] font-semibold text-[#594A42] mb-3 opacity-90">
-                  STEP 1 OF 4
-                </span>
-                <div className="w-full h-[2px] bg-[#E8E3D9] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#594A42] w-1/4 rounded-full" />
-                </div>
+                <QuestionnaireProgress step={1} totalSteps={5} />
               </div>
             </header>
 
@@ -895,12 +891,7 @@ export default function App() {
               </div>
               
               <div className="flex flex-col items-center w-full max-w-sm mt-4">
-                <span className="text-[10px] sm:text-xs tracking-[0.15em] font-semibold text-[#594A42] mb-3 opacity-90">
-                  STEP 2 OF 4
-                </span>
-                <div className="w-full h-[2px] bg-[#E8E3D9] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#594A42] w-2/4 rounded-full" />
-                </div>
+                <QuestionnaireProgress step={2} totalSteps={5} />
               </div>
             </header>
 
@@ -1003,12 +994,7 @@ export default function App() {
               </div>
               
               <div className="flex flex-col items-center w-full max-w-sm mt-4">
-                <span className="text-[10px] sm:text-xs tracking-[0.15em] font-semibold text-[#594A42] mb-3 opacity-90">
-                  STEP 3 OF 4
-                </span>
-                <div className="w-full h-[2px] bg-[#E8E3D9] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#594A42] w-3/4 rounded-full" />
-                </div>
+                <QuestionnaireProgress step={3} totalSteps={5} />
               </div>
             </header>
 
@@ -1111,12 +1097,7 @@ export default function App() {
               </div>
               
               <div className="flex flex-col items-center w-full max-w-sm mt-4">
-                <span className="text-[10px] sm:text-xs tracking-[0.15em] font-semibold text-[#594A42] mb-3 opacity-90">
-                  STEP 4 OF 4
-                </span>
-                <div className="w-full h-[2px] bg-[#E8E3D9] rounded-full overflow-hidden">
-                  <div className="h-full bg-[#594A42] w-full rounded-full" />
-                </div>
+                <QuestionnaireProgress step={4} totalSteps={5} />
               </div>
             </header>
 
@@ -1218,6 +1199,7 @@ export default function App() {
                 </h2>
                 <div className="w-24"></div>
               </div>
+              <QuestionnaireProgress step={5} totalSteps={5} />
             </header>
 
             {/* Main Content Area */}
