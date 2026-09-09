@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Menu, Lightbulb, Lock, Shield, ArrowLeft, ArrowRight, Check, ChevronLeft, Smartphone, Wind, Moon, Sun, User, X, Search, Users, CheckCircle, Clock, Star, Info, TrendingUp, Download, Filter, Table, ChevronRight, AlertCircle, MoreVertical, ArrowUp, ArrowDown, FastForward, Sparkles, Heart, Brain, Coffee, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Menu, Lightbulb, Lock, Shield, ArrowLeft, ArrowRight, Check, ChevronLeft, Smartphone, Wind, Moon, Sun, User, X, Search, Users, CheckCircle, Clock, Star, Info, TrendingUp, Download, Filter, Table, ChevronRight, AlertCircle, MoreVertical, ArrowUp, ArrowDown, FastForward, Sparkles, Heart, Brain, Coffee, CheckCircle2, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import SkeletalResultsLoader from './components/SkeletalResultsLoader';
@@ -327,7 +327,41 @@ export default function App() {
   const [dbReports, setDbReports] = useState<any[]>([]);
   const [dbSystemErrors, setDbSystemErrors] = useState<any[]>([]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);
+  const [isReportsRefreshing, setIsReportsRefreshing] = useState(false);
+  const [reportsRefreshError, setReportsRefreshError] = useState('');
   
+  const fetchReportsData = async (username: string, password: string): Promise<boolean> => {
+    try {
+      const repRes = await fetch('/api/admin/reports', {
+        headers: {
+          'X-Admin-Username': username.trim(),
+          'X-Admin-Password': password.trim()
+        }
+      });
+      if (!repRes.ok) {
+        return false;
+      }
+      const repData = await repRes.json();
+      setDbReports(repData?.evaluations || []);
+      setDbSystemErrors(repData?.system_errors || []);
+      return true;
+    } catch (err) {
+      console.error('Failed to fetch reports:', err);
+      return false;
+    }
+  };
+
+  const handleRefreshReports = async () => {
+    if (isReportsRefreshing || !adminUsername || !adminPassword) return;
+    setIsReportsRefreshing(true);
+    setReportsRefreshError('');
+    const ok = await fetchReportsData(adminUsername, adminPassword);
+    if (!ok) {
+      setReportsRefreshError('Could not refresh. Check your connection or log in again.');
+    }
+    setIsReportsRefreshing(false);
+  };
+
   const fetchAdminData = async (username: string, password: string) => {
     setIsAdminLoading(true);
     setAdminLoginError('');
@@ -350,17 +384,7 @@ export default function App() {
       const data = await res.json();
       
       try {
-        const repRes = await fetch('/api/admin/reports', {
-          headers: {
-            'X-Admin-Username': username.trim(),
-            'X-Admin-Password': password.trim()
-          }
-        });
-        if (repRes.ok) {
-          const repData = await repRes.json();
-          setDbReports(repData?.evaluations || []);
-          setDbSystemErrors(repData?.system_errors || []);
-        }
+        await fetchReportsData(username, password);
       } catch (err) {
         console.error('Failed to fetch reports:', err);
       }
@@ -2116,11 +2140,26 @@ export default function App() {
 
                 {/* Evaluation Results Table */}
                 <div className="bg-[#FAF8F5] rounded-2xl border border-[#E8E3D9] overflow-hidden flex flex-col shadow-sm w-full">
-                  <div className="p-5 sm:p-6 border-b border-[#E8E3D9] flex items-center justify-between">
+                  <div className="p-5 sm:p-6 border-b border-[#E8E3D9] flex items-center justify-between gap-4">
                     <div className="font-bold text-[#332A25]">
                       Evaluate Our System Results
                     </div>
-                    <span className="text-xs font-bold text-[#594A42]/70 tracking-wider uppercase">{dbReports.length} {dbReports.length === 1 ? 'response' : 'responses'}</span>
+                    <div className="flex items-center gap-3">
+                      {reportsRefreshError && (
+                        <span className="text-xs font-medium text-[#D94F4F]">{reportsRefreshError}</span>
+                      )}
+                      <span className="text-xs font-bold text-[#594A42]/70 tracking-wider uppercase whitespace-nowrap">{dbReports.length} {dbReports.length === 1 ? 'response' : 'responses'}</span>
+                      <button
+                        type="button"
+                        onClick={handleRefreshReports}
+                        disabled={isReportsRefreshing}
+                        title="Refresh results"
+                        aria-label="Refresh evaluation results"
+                        className={`w-8 h-8 rounded-full border border-[#E8E3D9] bg-white flex items-center justify-center text-[#594A42] transition-colors ${isReportsRefreshing ? 'opacity-60 cursor-wait' : 'hover:bg-[#F4F0E6] hover:border-[#594A42] cursor-pointer'}`}
+                      >
+                        <RefreshCw className={`w-4 h-4 ${isReportsRefreshing ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[900px]">
