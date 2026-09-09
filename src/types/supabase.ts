@@ -17,6 +17,7 @@ export interface Database {
           age_bracket: string
           sex: string
           grade_level: string
+          student_name: string | null
           pf1: number
           pf2: number
           pf3: number
@@ -50,6 +51,7 @@ export interface Database {
           age_bracket: string
           sex: string
           grade_level: string
+          student_name?: string | null
           pf1: number
           pf2: number
           pf3: number

@@ -194,6 +194,7 @@ export default function App() {
   const [ageBracket, setAgeBracket] = useState<string | null>(null);
   const [sex, setSex] = useState<string | null>(null);
   const [gradeLevel, setGradeLevel] = useState<string | null>(null);
+  const [studentName, setStudentName] = useState<string>('');
 
   // Fatigue Scales state
   const [fatigueAnswers, setFatigueAnswers] = useState<Record<string, number>>({});
@@ -242,6 +243,7 @@ export default function App() {
           age_bracket: ageBracket,
           sex,
           grade_level: gradeLevel,
+          student_name: studentName.trim() || null,
           pf1: fatigueAnswers['PF1'], pf2: fatigueAnswers['PF2'], pf3: fatigueAnswers['PF3'], pf4: fatigueAnswers['PF4'], pf5: fatigueAnswers['PF5'],
           cf1: fatigueAnswers['CF1'], cf2: fatigueAnswers['CF2'], cf3: fatigueAnswers['CF3'], cf4: fatigueAnswers['CF4'], cf5: fatigueAnswers['CF5'],
           sleep_duration: lifestyleAnswers['sleep'],
@@ -366,6 +368,7 @@ export default function App() {
         age: row.age_bracket || 'N/A',
         sex: row.sex || 'N/A',
         grade: row.grade_level || 'N/A',
+        name: row.student_name || '—',
         pf: [row.pf1 ?? 1, row.pf2 ?? 1, row.pf3 ?? 1, row.pf4 ?? 1, row.pf5 ?? 1],
         cf: [row.cf1 ?? 1, row.cf2 ?? 1, row.cf3 ?? 1, row.cf4 ?? 1, row.cf5 ?? 1],
         raw: row.raw_total_score ?? ((row.pf1 ?? 1) + (row.pf2 ?? 1) + (row.pf3 ?? 1) + (row.pf4 ?? 1) + (row.pf5 ?? 1) + (row.cf1 ?? 1) + (row.cf2 ?? 1) + (row.cf3 ?? 1) + (row.cf4 ?? 1) + (row.cf5 ?? 1))
@@ -763,6 +766,20 @@ export default function App() {
               </div>
 
               <div className="w-full flex flex-col gap-8 max-w-xl">
+                {/* Name (Optional) */}
+                <div className="flex flex-col gap-3">
+                  <label className="text-sm font-bold text-[#594A42]">Name <span className="font-medium text-[#594A42]/60">(Optional)</span></label>
+                  <input
+                    type="text"
+                    value={studentName}
+                    onChange={(e) => setStudentName(e.target.value)}
+                    maxLength={100}
+                    placeholder="Enter your full name (optional)"
+                    autoComplete="name"
+                    className="w-full h-12 px-4 rounded-xl border border-[#E8E3D9] bg-white text-[#594A42] text-sm font-medium placeholder:text-[#594A42]/50 outline-none focus:border-[#594A42] focus:bg-white transition-colors"
+                  />
+                </div>
+
                 {/* Age Bracket */}
                 <div className="flex flex-col gap-3">
                   <label className="text-sm font-bold text-[#594A42]">Age Bracket</label>
@@ -1680,6 +1697,7 @@ export default function App() {
                   setAgeBracket(null);
                   setSex(null);
                   setGradeLevel(null);
+                  setStudentName('');
                   setFatigueAnswers({});
                   setLifestyleAnswers({});
                   setEvaluationAnswers({});
@@ -1954,6 +1972,7 @@ export default function App() {
                           <th className="p-4 font-semibold whitespace-nowrap border-r border-[#E8E3D9]">Age Bracket</th>
                           <th className="p-4 font-semibold whitespace-nowrap border-r border-[#E8E3D9]">Sex</th>
                           <th className="p-4 font-semibold whitespace-nowrap border-r border-[#E8E3D9]">Grade Level</th>
+                          <th className="p-4 font-semibold whitespace-nowrap border-r border-[#E8E3D9]">Name</th>
                           <th className="p-4 font-semibold border-r border-[#E8E3D9]">PF1</th>
                           <th className="p-4 font-semibold border-r border-[#E8E3D9]">PF2</th>
                           <th className="p-4 font-semibold border-r border-[#E8E3D9]">PF3</th>
@@ -1975,6 +1994,7 @@ export default function App() {
                             <td className="p-4 text-sm font-medium text-[#594A42] border-r border-[#E8E3D9]">{row.age}</td>
                             <td className="p-4 text-sm font-medium text-[#594A42] border-r border-[#E8E3D9]">{row.sex}</td>
                             <td className="p-4 text-sm font-medium text-[#594A42] border-r border-[#E8E3D9] whitespace-nowrap">{row.grade}</td>
+                            <td className="p-4 text-sm font-medium text-[#594A42] border-r border-[#E8E3D9] whitespace-nowrap">{row.name}</td>
                             {row.pf.map((val, idx) => (
                               <td key={`pf-${idx}`} className="p-4 text-sm font-medium text-[#594A42] border-r border-[#E8E3D9]">{val}</td>
                             ))}

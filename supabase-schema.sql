@@ -9,6 +9,7 @@ create table if not exists public.submissions (
   age_bracket text not null,
   sex text not null,
   grade_level text not null,
+  student_name text,
   pf1 smallint not null,
   pf2 smallint not null,
   pf3 smallint not null,

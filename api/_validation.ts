@@ -22,6 +22,7 @@ export type SubmitPayload = {
   age_bracket: (typeof AGE_BRACKETS)[number];
   sex: (typeof SEX_OPTIONS)[number];
   grade_level: (typeof GRADE_LEVELS)[number];
+  student_name: string | null;
   pf1: number;
   pf2: number;
   pf3: number;
@@ -102,6 +103,19 @@ export function parseSubmitPayload(body: unknown): ParseResult<SubmitPayload> {
   if (!isOneOf(input.grade_level, GRADE_LEVELS)) {
     return { ok: false, error: 'Invalid grade_level.' };
   }
+
+  let student_name: string | null = null;
+  const rawName = input.student_name;
+  if (rawName !== undefined && rawName !== null) {
+    if (typeof rawName !== 'string') {
+      return { ok: false, error: 'Invalid student_name.' };
+    }
+    const trimmedName = rawName.trim();
+    if (trimmedName.length > 100) {
+      return { ok: false, error: 'student_name must be 100 characters or fewer.' };
+    }
+    student_name = trimmedName || null;
+  }
   if (!isOneOf(input.sleep_duration, SLEEP_DURATION_OPTIONS)) {
     return { ok: false, error: 'Invalid sleep_duration.' };
   }
@@ -145,6 +159,7 @@ export function parseSubmitPayload(body: unknown): ParseResult<SubmitPayload> {
       age_bracket: input.age_bracket,
       sex: input.sex,
       grade_level: input.grade_level,
+      student_name,
       sleep_duration: input.sleep_duration,
       study_break_frequency: input.study_break_frequency,
       pre_bed_screen_time: input.pre_bed_screen_time,

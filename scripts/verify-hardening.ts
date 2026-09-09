@@ -66,6 +66,14 @@ const validSubmit = {
 
 const parsedSubmit = parseSubmitPayload(validSubmit);
 assert(parsedSubmit.ok, 'Expected valid submit payload to parse');
+if (parsedSubmit.ok) {
+  assert(parsedSubmit.data.student_name === null, 'Expected missing student_name to default to null');
+}
+
+const parsedWithName = parseSubmitPayload({ ...validSubmit, student_name: '  Juan Dela Cruz  ' });
+assert(parsedWithName.ok && parsedWithName.data.student_name === 'Juan Dela Cruz', 'Expected optional student_name to parse and trim');
+const parsedWithBlankName = parseSubmitPayload({ ...validSubmit, student_name: '   ' });
+assert(parsedWithBlankName.ok && parsedWithBlankName.data.student_name === null, 'Expected blank student_name to normalize to null');
 
 const parsedEngineering = parseSubmitPayload({ ...validSubmit, grade_level: '11 Academic-Engineering' });
 assert(parsedEngineering.ok, 'Expected 11 Academic-Engineering to parse');

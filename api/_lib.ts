@@ -10,6 +10,7 @@ export interface SubmissionRecord {
   age_bracket: string;
   sex: string;
   grade_level: string;
+  student_name: string | null;
   pf1: number;
   pf2: number;
   pf3: number;
@@ -225,6 +226,7 @@ export function buildSubmissionRecord(body: SubmitPayload, calculated: ReturnTyp
     age_bracket: body.age_bracket,
     sex: body.sex,
     grade_level: body.grade_level,
+    student_name: body.student_name,
     pf1: body.pf1,
     pf2: body.pf2,
     pf3: body.pf3,
