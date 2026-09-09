@@ -535,7 +535,7 @@ export default function App() {
               <div className="flex items-start gap-4 max-w-[320px]">
                 <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 shrink-0 stroke-[1.25] mt-1 sm:mt-0 opacity-80" />
                 <p className="text-xs md:text-sm font-light italic leading-relaxed opacity-80">
-                  Responses are confidential and used for assessment purposes only.
+                  Responses are confidential and used for assessment purposes only
                 </p>
               </div>
               <button 
@@ -593,7 +593,7 @@ export default function App() {
               <div className="flex items-start gap-4 max-w-[320px]">
                 <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 shrink-0 stroke-[1.25] mt-1 sm:mt-0 opacity-80" />
                 <p className="text-xs md:text-sm font-light italic leading-relaxed opacity-80">
-                  Responses are confidential and used for assessment purposes only.
+                  Responses are confidential and used for assessment purposes only
                 </p>
               </div>
               <button 
@@ -655,7 +655,7 @@ export default function App() {
                     <h3 className="font-serif font-bold text-lg md:text-xl text-[#594A42]">Confidentiality</h3>
                   </div>
                   <p className="text-sm md:text-[15px] font-light leading-relaxed text-[#594A42]/80">
-                    Your responses are completely confidential and will be used solely for research and assessment purposes. No personally identifiable information will be shared with third parties or your educational institution without explicit, separate permission.
+                    Your responses, including your name, will be collected as part of the assessment. Access to identifiable responses is limited to your assigned adviser and the guidance counselor, who will use this information solely to assess your fatigue level and provide appropriate follow-up or support. Your responses will not be shared with any other party, including other school staff, without your explicit, separate permission.
                   </p>
                 </div>
 
