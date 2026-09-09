@@ -12,6 +12,7 @@ import CozyBackground from './components/CozyBackground';
 import { AnimatedPercentage, CircularProgress } from './components/AnimatedPercentage';
 import PercentageBreakdownCard from './components/PercentageBreakdownCard';
 import CitationTooltip from './components/CitationTooltip';
+import AboutTooltip from './components/AboutTooltip';
 import QuestionnaireProgress from './components/QuestionnaireProgress';
 
 // Verbatim "Adapted from" source lines printed in the PDF questionnaire.
@@ -506,9 +507,7 @@ export default function App() {
           >
             {/* Landing Top Section */}
             <header className="flex flex-col sm:flex-row justify-between items-start w-full gap-4 sm:gap-0">
-              <button className="text-xs md:text-sm tracking-[0.25em] font-light uppercase hover:opacity-70 transition-opacity">
-                About
-              </button>
+              <AboutTooltip />
               <p className="text-sm md:text-base font-light italic text-left sm:text-right max-w-[280px] leading-relaxed opacity-80">
                 A study fatigue indicator through a short questionnaire assessment.
               </p>
