@@ -1,4 +1,4 @@
-import { isAdminAuthorized, sendJson } from '../_lib.js';
+import { isAdminAuthorized, sendJson, getEvaluations, getSystemErrors } from '../_lib.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -9,5 +9,17 @@ export default async function handler(req: any, res: any) {
     return sendJson(res, 401, { error: 'Incorrect credentials' });
   }
 
-  return sendJson(res, 200, []);
+  try {
+    const evaluations = await getEvaluations();
+    const systemErrors = await getSystemErrors();
+
+    return sendJson(res, 200, {
+      evaluations,
+      system_errors: systemErrors,
+    });
+  } catch (error) {
+    console.error('Failed to read reports:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    return sendJson(res, 500, { error: 'Failed to read reports', details: message });
+  }
 }

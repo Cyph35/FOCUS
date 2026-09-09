@@ -1,4 +1,4 @@
-import { getAllSubmissions, isAdminAuthorized, sendJson } from '../_lib.js';
+import { getAllSubmissions, isAdminAuthorized, logSystemError, sendJson } from '../_lib.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -14,6 +14,7 @@ export default async function handler(req: any, res: any) {
     return sendJson(res, 200, submissions);
   } catch (error) {
     console.error('Failed to read submissions:', error);
+    await logSystemError('admin.submissions', error);
     const message = error instanceof Error ? error.message : String(error);
     return sendJson(res, 500, { error: 'Failed to read submissions', details: message });
   }

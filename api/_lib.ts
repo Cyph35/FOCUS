@@ -38,6 +38,31 @@ export interface SubmissionRecord {
   suggestion: string;
 }
 
+export interface SystemErrorRecord {
+  id: number;
+  created_at: string;
+  severity: string;
+  source: string;
+  message: string;
+  details: string;
+  resolved: boolean;
+}
+
+export interface EvaluationResultRecord {
+  response_id: string;
+  submitted_at: string;
+  student_name: string | null;
+  age_bracket: string;
+  sex: string;
+  grade_level: string;
+  f1: number | null;
+  f2: number | null;
+  u1: number | null;
+  u2: number | null;
+  r1: number | null;
+  r2: number | null;
+}
+
 const EVALUATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
 function readEnv(name: string): string {
@@ -137,6 +162,58 @@ export async function getAllSubmissions(): Promise<SubmissionRecord[]> {
   }
 
   return data as SubmissionRecord[];
+}
+
+export async function getEvaluations(): Promise<EvaluationResultRecord[]> {
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('submissions')
+    .select('response_id, submitted_at, student_name, age_bracket, sex, grade_level, f1, f2, u1, u2, r1, r2')
+    .not('f1', 'is', null)
+    .order('submitted_at', { ascending: false });
+
+  if (error || !data) {
+    throw error ?? new Error('Failed to read evaluation results');
+  }
+
+  return data as EvaluationResultRecord[];
+}
+
+export async function getSystemErrors(): Promise<SystemErrorRecord[]> {
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('system_errors')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (error || !data) {
+    throw error ?? new Error('Failed to read system errors');
+  }
+
+  return data as SystemErrorRecord[];
+}
+
+export async function logSystemError(
+  source: string,
+  message: unknown,
+  details?: unknown,
+  severity: string = 'error'
+): Promise<void> {
+  if (!supabase) return;
+
+  await supabase.from('system_errors').insert({
+    severity,
+    source,
+    message: message instanceof Error ? message.message : String(message),
+    details: details === undefined ? '' : JSON.stringify(details),
+  });
 }
 
 export async function saveSubmission(record: SubmissionRecord): Promise<SubmissionRecord> {

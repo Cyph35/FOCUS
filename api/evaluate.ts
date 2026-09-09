@@ -1,4 +1,4 @@
-import { saveEvaluation, sendJson, verifyEvaluationToken } from './_lib.js';
+import { logSystemError, saveEvaluation, sendJson, verifyEvaluationToken } from './_lib.js';
 import { parseEvaluationPayload, parseEvaluationToken } from './_validation.js';
 
 export default async function handler(req: any, res: any) {
@@ -21,6 +21,7 @@ export default async function handler(req: any, res: any) {
     return sendJson(res, 200, { ok: true, message: 'Evaluation saved successfully' });
   } catch (error) {
     console.error('Evaluation failed:', error);
+    await logSystemError('evaluate', error);
     if (error instanceof Error && error.message === 'Submission not found') {
       return sendJson(res, 404, { error: 'Submission not found' });
     }

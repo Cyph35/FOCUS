@@ -79,6 +79,27 @@ export interface Database {
           suggestion: string
         }
         Update: Partial<Database['public']['Tables']['submissions']['Insert']>
+      },
+      system_errors: {
+        Row: {
+          id: number
+          created_at: string
+          severity: string
+          source: string
+          message: string
+          details: string
+          resolved: boolean
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          severity?: string
+          source: string
+          message: string
+          details?: string
+          resolved?: boolean
+        }
+        Update: Partial<Database['public']['Tables']['system_errors']['Insert']>
       }
     }
   }

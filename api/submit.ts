@@ -1,4 +1,4 @@
-import { buildSubmissionRecord, calculateScore, createEvaluationToken, saveSubmission, sendJson } from './_lib.js';
+import { buildSubmissionRecord, calculateScore, createEvaluationToken, logSystemError, saveSubmission, sendJson } from './_lib.js';
 import { parseSubmitPayload } from './_validation.js';
 
 export default async function handler(req: any, res: any) {
@@ -30,6 +30,7 @@ export default async function handler(req: any, res: any) {
     });
   } catch (error) {
     console.error('Submit failed:', error);
+    await logSystemError('submit', error);
     return sendJson(res, 500, { error: 'Submission failed' });
   }
 }

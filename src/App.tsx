@@ -324,6 +324,7 @@ export default function App() {
   const [showAdminPassword, setShowAdminPassword] = useState(false);
   const [dbRespondents, setDbRespondents] = useState<any[]>([]);
   const [dbReports, setDbReports] = useState<any[]>([]);
+  const [dbSystemErrors, setDbSystemErrors] = useState<any[]>([]);
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   
   const fetchAdminData = async (username: string, password: string) => {
@@ -356,7 +357,8 @@ export default function App() {
         });
         if (repRes.ok) {
           const repData = await repRes.json();
-          setDbReports(repData || []);
+          setDbReports(repData?.evaluations || []);
+          setDbSystemErrors(repData?.system_errors || []);
         }
       } catch (err) {
         console.error('Failed to fetch reports:', err);
@@ -2061,8 +2063,8 @@ export default function App() {
               <div className="flex-1 w-full max-w-[1400px] mx-auto p-6 sm:p-8 flex flex-col gap-8">
                 {/* Header */}
                 <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl sm:text-4xl font-sans font-bold text-[#332A25]">System Reports</h1>
-                  <p className="text-[#594A42]/80 text-sm sm:text-base font-medium">Monitor and manage participant-reported issues and technical feedback.</p>
+                  <h1 className="text-3xl sm:text-4xl font-sans font-bold text-[#332A25]">Reports</h1>
+                  <p className="text-[#594A42]/80 text-sm sm:text-base font-medium">System evaluation results and server-side errors captured by the FOCUS API.</p>
                 </div>
 
                 {/* KPI Cards */}
@@ -2070,251 +2072,148 @@ export default function App() {
                   {/* Card 1 */}
                   <div className="bg-[#FAF8F5] rounded-2xl p-6 shadow-sm flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Open Issues</span>
-                      <div className="w-8 h-8 rounded-full bg-[#D94F4F]/10 flex items-center justify-center">
-                        <AlertCircle className="w-5 h-5 text-white fill-[#D94F4F]" />
+                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Evaluations</span>
+                      <div className="w-8 h-8 rounded-full bg-[#4F7CD9]/10 flex items-center justify-center">
+                        <Star className="w-5 h-5 text-[#332A25] fill-[#4F7CD9]" />
                       </div>
                     </div>
                     <div className="flex items-end gap-3">
-                      <span className="text-4xl font-bold text-[#332A25]">{dbReports.filter(r => r.status !== 'Resolved').length}</span>
-                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">Total open</span>
+                      <span className="text-4xl font-bold text-[#332A25]">{dbReports.length}</span>
+                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">Total responses</span>
                     </div>
                   </div>
                   {/* Card 2 */}
                   <div className="bg-[#FAF8F5] rounded-2xl p-6 shadow-sm flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Resolved</span>
+                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Avg Rating</span>
                       <div className="w-8 h-8 rounded-full bg-[#91815A]/10 flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-[#332A25] fill-[#D9B34F]" />
+                        <TrendingUp className="w-5 h-5 text-[#332A25]" />
                       </div>
                     </div>
                     <div className="flex items-end gap-3">
-                      <span className="text-4xl font-bold text-[#332A25]">{dbReports.filter(r => r.status === 'Resolved').length}</span>
-                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">Total resolved</span>
+                      <span className="text-4xl font-bold text-[#332A25]">
+                        {dbReports.length > 0
+                          ? (dbReports.reduce((acc, r) => acc + ((r.f1 ?? 0) + (r.f2 ?? 0) + (r.u1 ?? 0) + (r.u2 ?? 0) + (r.r1 ?? 0) + (r.r2 ?? 0)), 0) / (dbReports.length * 6)).toFixed(1)
+                          : '--'}
+                      </span>
+                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">/ 5</span>
                     </div>
                   </div>
                   {/* Card 3 */}
                   <div className="bg-[#FAF8F5] rounded-2xl p-6 shadow-sm flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Avg Resolution Time</span>
-                      <div className="w-8 h-8 rounded-full bg-[#E8E3D9] flex items-center justify-center">
-                        <Clock className="w-5 h-5 text-white fill-[#887F7A]" />
+                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Open Errors</span>
+                      <div className="w-8 h-8 rounded-full bg-[#D94F4F]/10 flex items-center justify-center">
+                        <AlertCircle className="w-5 h-5 text-white fill-[#D94F4F]" />
                       </div>
                     </div>
                     <div className="flex items-end gap-3">
-                      <span className="text-4xl font-bold text-[#332A25]">N/A</span>
-                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">Insufficient data</span>
+                      <span className="text-4xl font-bold text-[#332A25]">{dbSystemErrors.filter(e => !e.resolved).length}</span>
+                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">Unresolved</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Table Container */}
+                {/* Evaluation Results Table */}
                 <div className="bg-[#FAF8F5] rounded-2xl border border-[#E8E3D9] overflow-hidden flex flex-col shadow-sm w-full">
-                  {/* Table Header */}
                   <div className="p-5 sm:p-6 border-b border-[#E8E3D9] flex items-center justify-between">
                     <div className="font-bold text-[#332A25]">
-                      Recent Reports
+                      Evaluate Our System Results
                     </div>
-                    <div className="flex items-center gap-4 text-[#594A42]">
-                      <Filter className="w-5 h-5 cursor-pointer hover:text-[#332A25] transition-colors" />
-                      <MoreVertical className="w-5 h-5 cursor-pointer hover:text-[#332A25] transition-colors" />
-                    </div>
+                    <span className="text-xs font-bold text-[#594A42]/70 tracking-wider uppercase">{dbReports.length} {dbReports.length === 1 ? 'response' : 'responses'}</span>
                   </div>
-                  {/* Table */}
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse min-w-[800px]">
+                    <table className="w-full text-left border-collapse min-w-[900px]">
                       <thead>
                         <tr className="bg-[#F4F0E6] text-xs uppercase tracking-wider text-[#594A42]">
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Report ID</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Date</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Category</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Status</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Respondent ID</th>
-                          <th className="p-4 sm:px-6 font-semibold text-right">Action</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Respondent</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Submitted</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap text-center">F1</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap text-center">F2</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap text-center">U1</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap text-center">U2</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap text-center">R1</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap text-center">R2</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap text-center">Avg</th>
                         </tr>
                       </thead>
                       <tbody>
                         {dbReports.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="p-8 text-center text-sm font-medium text-[#594A42]/60">
-                              No reports found.
+                            <td colSpan={9} className="p-8 text-center text-sm font-medium text-[#594A42]/60">
+                              No evaluation responses yet.
                             </td>
                           </tr>
                         ) : (
-                          dbReports.map((row, i) => (
-                            <tr key={i} className="border-b border-[#E8E3D9] hover:bg-[#F4F0E6]/50 transition-colors">
-                              <td className="p-4 sm:px-6 text-sm font-bold text-[#332A25]">{row.id}</td>
-                              <td className="p-4 sm:px-6 text-sm font-medium text-[#594A42] whitespace-nowrap">{row.date}</td>
+                          dbReports.map((row: any, i: number) => {
+                            const scores = [row.f1, row.f2, row.u1, row.u2, row.r1, row.r2];
+                            const answered = scores.filter((s) => s !== null && s !== undefined);
+                            const avg = answered.length > 0 ? (answered.reduce((a: number, b: number) => a + b, 0) / answered.length).toFixed(1) : '--';
+                            return (
+                              <tr key={row.response_id || i} className="border-b border-[#E8E3D9] hover:bg-[#F4F0E6]/50 transition-colors">
+                                <td className="p-4 sm:px-6 text-sm font-bold text-[#332A25]">{row.student_name || row.response_id || 'RSP-ANON'}</td>
+                                <td className="p-4 sm:px-6 text-sm font-medium text-[#594A42] whitespace-nowrap">{row.submitted_at ? new Date(row.submitted_at).toLocaleString() : '—'}</td>
+                                {[row.f1, row.f2, row.u1, row.u2, row.r1, row.r2].map((s: any, j: number) => (
+                                  <td key={j} className="p-4 sm:px-6 text-sm font-medium text-[#594A42] text-center">{s ?? '—'}</td>
+                                ))}
+                                <td className="p-4 sm:px-6 text-sm font-bold text-[#332A25] text-center">{avg}</td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* System Errors Table */}
+                <div className="bg-[#FAF8F5] rounded-2xl border border-[#E8E3D9] overflow-hidden flex flex-col shadow-sm w-full">
+                  <div className="p-5 sm:p-6 border-b border-[#E8E3D9] flex items-center justify-between">
+                    <div className="font-bold text-[#332A25]">
+                      System Errors
+                    </div>
+                    <span className="text-xs font-bold text-[#594A42]/70 tracking-wider uppercase">{dbSystemErrors.filter((e: any) => !e.resolved).length} open</span>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                      <thead>
+                        <tr className="bg-[#F4F0E6] text-xs uppercase tracking-wider text-[#594A42]">
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Logged At</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Source</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Severity</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Message</th>
+                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dbSystemErrors.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-sm font-medium text-[#594A42]/60">
+                              No system errors logged.
+                            </td>
+                          </tr>
+                        ) : (
+                          dbSystemErrors.map((err: any) => (
+                            <tr key={err.id} className="border-b border-[#E8E3D9] hover:bg-[#F4F0E6]/50 transition-colors">
+                              <td className="p-4 sm:px-6 text-sm font-medium text-[#594A42] whitespace-nowrap">{err.created_at ? new Date(err.created_at).toLocaleString() : '—'}</td>
+                              <td className="p-4 sm:px-6 text-sm font-medium text-[#594A42]">{err.source}</td>
                               <td className="p-4 sm:px-6">
-                                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${
-                                  row.category === 'Bug' ? 'bg-[#D94F4F]/10 text-[#D94F4F]' :
-                                  row.category === 'UI/UX' ? 'bg-[#E8E3D9] text-[#594A42]' :
-                                  'bg-[#4F7CD9]/10 text-[#4F7CD9]'
-                                }`}>
-                                  {row.category}
+                                <span className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${err.severity === 'error' ? 'bg-[#D94F4F]/10 text-[#D94F4F]' : 'bg-[#E8E3D9] text-[#594A42]'}`}>
+                                  {err.severity}
                                 </span>
                               </td>
+                              <td className="p-4 sm:px-6 text-sm font-medium text-[#594A42] max-w-[320px] truncate" title={err.details || err.message}>{err.message}</td>
                               <td className="p-4 sm:px-6">
                                 <div className="flex items-center gap-2 text-sm font-medium text-[#594A42]">
-                                  <div className={`w-2 h-2 rounded-full ${
-                                    row.status === 'New' ? 'bg-[#D94F4F]' :
-                                    row.status === 'Investigating' ? 'bg-[#D9B34F]' :
-                                    'bg-[#887F7A]'
-                                  }`} />
-                                  {row.status}
+                                  <div className={`w-2 h-2 rounded-full ${err.resolved ? 'bg-[#887F7A]' : 'bg-[#D94F4F]'}`} />
+                                  {err.resolved ? 'Resolved' : 'Open'}
                                 </div>
-                              </td>
-                              <td className="p-4 sm:px-6 text-sm font-medium text-[#594A42]">{row.respondentId}</td>
-                              <td className="p-4 sm:px-6 text-right">
-                                {/* Actions like view/edit can go here */}
                               </td>
                             </tr>
                           ))
                         )}
                       </tbody>
                     </table>
-                  </div>
-                  {/* Pagination footer */}
-                  <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FAF8F5]">
-                    <span className="text-sm text-[#594A42]/80 font-medium">
-                      Showing {(respondentPage - 1) * respondentsPerPage + (sortedRespondents.length > 0 ? 1 : 0)} to {Math.min(respondentPage * respondentsPerPage, sortedRespondents.length)} of {sortedRespondents.length} entries
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <button 
-                        onClick={() => setRespondentPage(Math.max(1, respondentPage - 1))}
-                        disabled={respondentPage === 1}
-                        className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${respondentPage === 1 ? 'bg-[#E8E3D9]/50 text-[#594A42]/50 cursor-not-allowed' : 'bg-[#E8E3D9] text-[#594A42] hover:bg-[#C5BDB6] cursor-pointer'}`}
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                        // Very simple pagination display: show current, first, last, and +/- 1
-                        if (page === 1 || page === totalPages || (page >= respondentPage - 1 && page <= respondentPage + 1)) {
-                          return (
-                            <button 
-                              key={page}
-                              onClick={() => setRespondentPage(page)}
-                              className={`w-8 h-8 flex items-center justify-center rounded font-semibold transition-colors cursor-pointer ${
-                                respondentPage === page 
-                                  ? 'bg-[#594A42] text-white' 
-                                  : 'hover:bg-[#E8E3D9] text-[#594A42]'
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          );
-                        } else if (page === respondentPage - 2 || page === respondentPage + 2) {
-                          return <span key={page} className="w-8 h-8 flex items-center justify-center text-[#594A42]">...</span>;
-                        }
-                        return null;
-                      })}
-
-                      <button 
-                        onClick={() => setRespondentPage(Math.min(totalPages, respondentPage + 1))}
-                        disabled={respondentPage === totalPages}
-                        className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${respondentPage === totalPages ? 'bg-[#E8E3D9]/50 text-[#594A42]/50 cursor-not-allowed' : 'bg-[#E8E3D9] text-[#594A42] hover:bg-[#C5BDB6] cursor-pointer'}`}
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {adminTab === 'reports' && (
-              <div className="flex-1 w-full max-w-[1400px] mx-auto p-6 sm:p-8 flex flex-col gap-8">
-                {/* Header */}
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-3xl sm:text-4xl font-sans font-bold text-[#332A25]">System Reports</h1>
-                  <p className="text-[#594A42]/80 text-sm sm:text-base font-medium">Monitor and manage participant-reported issues and technical feedback.</p>
-                </div>
-
-                {/* KPI Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                  {/* Card 1 */}
-                  <div className="bg-[#FAF8F5] rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Open Issues</span>
-                      <div className="w-8 h-8 rounded-full bg-[#D94F4F]/10 flex items-center justify-center">
-                        <AlertCircle className="w-5 h-5 text-white fill-[#D94F4F]" />
-                      </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                      <span className="text-4xl font-bold text-[#332A25]">0</span>
-                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">--</span>
-                    </div>
-                  </div>
-                  {/* Card 2 */}
-                  <div className="bg-[#FAF8F5] rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Resolved</span>
-                      <div className="w-8 h-8 rounded-full bg-[#91815A]/10 flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-[#332A25] fill-[#D9B34F]" />
-                      </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                      <span className="text-4xl font-bold text-[#332A25]">0</span>
-                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">--</span>
-                    </div>
-                  </div>
-                  {/* Card 3 */}
-                  <div className="bg-[#FAF8F5] rounded-2xl p-6 shadow-sm flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#594A42] tracking-wider uppercase">Avg Resolution Time</span>
-                      <div className="w-8 h-8 rounded-full bg-[#E8E3D9] flex items-center justify-center">
-                        <Clock className="w-5 h-5 text-white fill-[#887F7A]" />
-                      </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                      <span className="text-4xl font-bold text-[#332A25]">0h</span>
-                      <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">--</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Table Container */}
-                <div className="bg-[#FAF8F5] rounded-2xl border border-[#E8E3D9] overflow-hidden flex flex-col shadow-sm w-full">
-                  {/* Table Header */}
-                  <div className="p-5 sm:p-6 border-b border-[#E8E3D9] flex items-center justify-between">
-                    <div className="font-bold text-[#332A25]">
-                      Recent Reports
-                    </div>
-                    <div className="flex items-center gap-4 text-[#594A42]">
-                      <Filter className="w-5 h-5 cursor-pointer hover:text-[#332A25] transition-colors" />
-                      <MoreVertical className="w-5 h-5 cursor-pointer hover:text-[#332A25] transition-colors" />
-                    </div>
-                  </div>
-                  {/* Table */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse min-w-[800px]">
-                      <thead>
-                        <tr className="bg-[#F4F0E6] text-xs uppercase tracking-wider text-[#594A42]">
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Report ID</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Date</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Category</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Status</th>
-                          <th className="p-4 sm:px-6 font-semibold whitespace-nowrap">Respondent ID</th>
-                          <th className="p-4 sm:px-6 font-semibold text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td colSpan={6} className="p-8 text-center text-sm font-medium text-[#594A42]/60">
-                            No reports found.
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  {/* Pagination footer */}
-                  <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FAF8F5]">
-                    <span className="text-sm text-[#594A42]/80 font-medium">Showing {dbReports.length > 0 ? 1 : 0} to {dbReports.length} of {dbReports.length} entries</span>
-                    <div className="flex items-center gap-1">
-                      <button className="w-8 h-8 flex items-center justify-center rounded bg-[#E8E3D9]/50 text-[#594A42]/50 cursor-not-allowed transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-                      <button className="w-8 h-8 flex items-center justify-center rounded bg-[#E8E3D9]/50 text-[#594A42]/50 cursor-not-allowed transition-colors"><ChevronRight className="w-4 h-4" /></button>
-                    </div>
                   </div>
                 </div>
               </div>
