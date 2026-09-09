@@ -85,6 +85,23 @@ assert(!invalidStrand.ok, 'Expected unlisted grade_level to fail');
 const invalidScore = parseSubmitPayload({ ...validSubmit, pf1: 9 });
 assert(!invalidScore.ok, 'Expected out-of-range pf1 to fail');
 
+// Regression: unevaluated submits must store NULLs, not phantom 5s.
+const parsedNoEval = parseSubmitPayload(validSubmit);
+assert(parsedNoEval.ok, 'Expected submit without eval keys to parse');
+if (parsedNoEval.ok) {
+  assert(
+    parsedNoEval.data.f1 === null && parsedNoEval.data.f2 === null && parsedNoEval.data.u1 === null &&
+    parsedNoEval.data.u2 === null && parsedNoEval.data.r1 === null && parsedNoEval.data.r2 === null,
+    'Expected missing eval scores to normalize to null (not 5)'
+  );
+}
+
+const parsedWithEval = parseSubmitPayload({ ...validSubmit, f1: 4, f2: 3, u1: 5, u2: 2, r1: 4, r2: 3 });
+assert(
+  parsedWithEval.ok && parsedWithEval.data.f1 === 4 && parsedWithEval.data.r2 === 3,
+  'Expected explicit eval scores to be preserved'
+);
+
 const invalidEval = parseEvaluationPayload({ response_id: 'not-valid', f1: 1, f2: 1, u1: 1, u2: 1, r1: 1, r2: 1 });
 assert(!invalidEval.ok, 'Expected invalid response_id to fail');
 

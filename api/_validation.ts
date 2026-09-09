@@ -36,12 +36,12 @@ export type SubmitPayload = {
   sleep_duration: (typeof SLEEP_DURATION_OPTIONS)[number];
   study_break_frequency: (typeof STUDY_BREAK_OPTIONS)[number];
   pre_bed_screen_time: (typeof PRE_BED_SCREEN_OPTIONS)[number];
-  f1: number;
-  f2: number;
-  u1: number;
-  u2: number;
-  r1: number;
-  r2: number;
+  f1: number | null;
+  f2: number | null;
+  u1: number | null;
+  u2: number | null;
+  r1: number | null;
+  r2: number | null;
 };
 
 export type EvaluationPatch = {
@@ -130,7 +130,7 @@ export function parseSubmitPayload(body: unknown): ParseResult<SubmitPayload> {
   const cfKeys = ['cf1', 'cf2', 'cf3', 'cf4', 'cf5'] as const;
   const evalKeys = ['f1', 'f2', 'u1', 'u2', 'r1', 'r2'] as const;
 
-  const scales: Record<string, number> = {};
+  const scales: Record<string, number | null> = {};
   for (const key of pfKeys) {
     const value = requireScale(input, key, 1, 4);
     if (typeof value === 'string') return { ok: false, error: value };
@@ -144,7 +144,7 @@ export function parseSubmitPayload(body: unknown): ParseResult<SubmitPayload> {
   for (const key of evalKeys) {
     const raw = input[key];
     if (raw === undefined || raw === null || raw === '') {
-      scales[key] = 5;
+      scales[key] = null;
       continue;
     }
     const value = requireScale(input, key, 1, 5);

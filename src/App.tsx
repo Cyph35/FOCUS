@@ -2092,9 +2092,10 @@ export default function App() {
                     </div>
                     <div className="flex items-end gap-3">
                       <span className="text-4xl font-bold text-[#332A25]">
-                        {dbReports.length > 0
-                          ? (dbReports.reduce((acc, r) => acc + ((r.f1 ?? 0) + (r.f2 ?? 0) + (r.u1 ?? 0) + (r.u2 ?? 0) + (r.r1 ?? 0) + (r.r2 ?? 0)), 0) / (dbReports.length * 6)).toFixed(1)
-                          : '--'}
+                        {(() => {
+                            const answeredScores = dbReports.flatMap((r: any) => [r.f1, r.f2, r.u1, r.u2, r.r1, r.r2].filter((s) => s !== null && s !== undefined));
+                            return answeredScores.length > 0 ? (answeredScores.reduce((a: number, b: number) => a + b, 0) / answeredScores.length).toFixed(1) : '--';
+                          })()}
                       </span>
                       <span className="text-sm font-semibold text-[#594A42]/70 flex items-center pb-1">/ 5</span>
                     </div>

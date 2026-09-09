@@ -24,12 +24,12 @@ export interface SubmissionRecord {
   sleep_duration: string;
   study_break_frequency: string;
   pre_bed_screen_time: string;
-  f1: number;
-  f2: number;
-  u1: number;
-  u2: number;
-  r1: number;
-  r2: number;
+  f1: number | null;
+  f2: number | null;
+  u1: number | null;
+  u2: number | null;
+  r1: number | null;
+  r2: number | null;
   raw_physical_score: number;
   raw_cognitive_score: number;
   raw_total_score: number;
@@ -169,10 +169,19 @@ export async function getEvaluations(): Promise<EvaluationResultRecord[]> {
     return [];
   }
 
+  // Only rows where ALL six evaluation scores are answered count as
+  // completed evaluations. Skipped/partial evaluations stay NULL and
+  // are excluded (previously missing scores defaulted to 5, producing
+  // phantom "perfect" evaluation rows).
   const { data, error } = await supabase
     .from('submissions')
     .select('response_id, submitted_at, student_name, age_bracket, sex, grade_level, f1, f2, u1, u2, r1, r2')
     .not('f1', 'is', null)
+    .not('f2', 'is', null)
+    .not('u1', 'is', null)
+    .not('u2', 'is', null)
+    .not('r1', 'is', null)
+    .not('r2', 'is', null)
     .order('submitted_at', { ascending: false });
 
   if (error || !data) {
