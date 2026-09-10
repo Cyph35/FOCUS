@@ -1,6 +1,6 @@
 export const AGE_BRACKETS = ['15-16', '17-18', '19+'] as const;
 export const SEX_OPTIONS = ['Male', 'Female', 'Prefer not to say'] as const;
-export const GRADE_LEVELS = ['11 Academic-Engineering', '11 Academic-Medical'] as const;
+export const GRADE_LEVELS = ['11 Academic-Engineering', '11 Academic-Medical', '12 Academic-STEM'] as const;
 export const SLEEP_DURATION_OPTIONS = [
   'Less than 5 hours',
   '5–6 hours',

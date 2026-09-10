@@ -79,11 +79,12 @@ export function getAdminCredentials(): { username: string; password: string } | 
   return { username, password };
 }
 
-export type AdminRole = 'main' | 'engineering' | 'medical';
+export type AdminRole = 'main' | 'engineering' | 'medical' | 'stem';
 
 export const ADVISER_GRADE: Record<Exclude<AdminRole, 'main'>, (typeof GRADE_LEVELS)[number]> = {
   engineering: '11 Academic-Engineering',
   medical: '11 Academic-Medical',
+  stem: '12 Academic-STEM',
 };
 
 export interface AdminRoleResult {
@@ -91,7 +92,7 @@ export interface AdminRoleResult {
   grade: string | null;
 }
 
-function getAdviserCredentials(prefix: 'ENGINEERING' | 'MEDICAL'): { username: string; password: string } | null {
+function getAdviserCredentials(prefix: 'ENGINEERING' | 'MEDICAL' | 'STEM'): { username: string; password: string } | null {
   const username = readEnv(`${prefix}_ADMIN_USERNAME`);
   const password = readEnv(`${prefix}_ADMIN_PASSWORD`);
   if (!username || !password) {
@@ -120,6 +121,11 @@ export function resolveAdminRole(rawUsername: unknown, rawPassword: unknown): Ad
   const medical = getAdviserCredentials('MEDICAL');
   if (medical && safeEqual(username, medical.username) && safeEqual(password, medical.password)) {
     return { role: 'medical', grade: ADVISER_GRADE.medical };
+  }
+
+  const stem = getAdviserCredentials('STEM');
+  if (stem && safeEqual(username, stem.username) && safeEqual(password, stem.password)) {
+    return { role: 'stem', grade: ADVISER_GRADE.stem };
   }
 
   return null;
@@ -171,7 +177,7 @@ export function calculateScore(body: Pick<SubmitPayload, 'pf1' | 'pf2' | 'pf3' |
 }
 
 export function isAdminAuthorized(req: { headers?: Record<string, unknown> }) {
-  // Any configured credential pair (main, engineering adviser, medical adviser)
+  // Any configured credential pair (main, engineering/medical/STEM adviser)
   // is authorized to reach the admin endpoints. Callers should use
   // resolveAdminRole() when they need to know which scope (grade filter) applies.
   return resolveAdminRole(req.headers?.['x-admin-username'], req.headers?.['x-admin-password']) !== null;

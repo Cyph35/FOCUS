@@ -42,6 +42,8 @@ Set these in Vercel → Settings → Environment Variables for Production and Pr
 | `ENGINEERING_ADMIN_PASSWORD` | Engineering adviser auth | Long random password. Paired env var above. |
 | `MEDICAL_ADMIN_USERNAME` | Medical adviser auth | Optional but recommended. Only sees `11 Academic-Medical` responses. |
 | `MEDICAL_ADMIN_PASSWORD` | Medical adviser auth | Long random password. Paired env var above. |
+| `STEM_ADMIN_USERNAME` | STEM adviser auth | Optional but recommended. Only sees `12 Academic-STEM` responses. |
+| `STEM_ADMIN_PASSWORD` | STEM adviser auth | Long random password. Paired env var above. |
 | `EVALUATION_TOKEN_SECRET` | Signed evaluation writes | HMAC secret. Use 32+ random characters. |
 | `SUPABASE_URL` | Server | Project URL. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only | Never expose in `VITE_*` or client code. |
