@@ -2,83 +2,68 @@
 
 ## Overview
 
-Remove the `Grade 11 STEM Adviser` and `Grade 12 STEM Adviser` choices from Part I: Demographic Profile (leaving only `11 Academic-Engineering` and `11 Academic-Medical`), and update the API validation plus the Supabase schema so those removed values are rejected for all new submissions while legacy rows are preserved.
+Add an expandable **ADVISER** entry to the hamburger side menu that drops down to **Engineering Admin** and **Medical Admin**, each opening the username/password modal for a separate strand-scoped login, while keeping the existing shared **Admin Login** (which sees everything).
 
-Scope is the demographic selector, backend validation, smoke tests, and the Supabase `submissions.grade_level` CHECK constraint (canonical schema + a new migration). No data migration: existing `Grade 11`/`Grade 12` rows stay readable; only new inserts/updates with those values are blocked.
+Scope covers the side-menu dropdown UI, a role-aware login flow, three server-side credential pairs, server-enforced strand filtering across all admin data endpoints, and docs/tests. High-level approach: credentials stay server-only in new env vars; the server derives the caller's role from whichever credential pair matched (timing-safe, same as today) and filters `submissions`/`evaluations` queries by `grade_level` before data ever leaves the server — so an adviser physically cannot receive the other strand's rows. The frontend stores the server-returned role, scopes nothing itself (defense-in-depth badge only), and all existing UI (Dashboard charts, Respondents table + refresh, Reports, CSV) adapts automatically because it is data-driven.
+
+Delivered credentials (set server-side as env vars, never committed to git): Engineering and Medical adviser usernames/passwords were provided separately and are stored only in the gitignored local `.env` and the Vercel environment variables.
 
 ## Types
 
-- `api/_validation.ts` — `GRADE_LEVELS` narrows to `['11 Academic-Engineering', '11 Academic-Medical']`. `SubmitPayload['grade_level']` derives from `(typeof GRADE_LEVELS)[number]`, narrowing automatically.
-- `src/types/supabase.ts` (`grade_level: string`, lines 19/53) — unchanged.
-- `api/_lib.ts` records — unchanged (`string`).
-- `supabase-schema.sql` — canonical CHECK narrows to the 2 strand values.
+- `api/_lib.ts` — new `export type AdminRole = 'main' | 'engineering' | 'medical';` plus `export const ADVISER_GRADE: Record<Exclude<AdminRole,'main'>, (typeof GRADE_LEVELS)[number]>` mapping exactly `{ engineering: '11 Academic-Engineering', medical: '11 Academic-Medical' }` (typed to match `GRADE_LEVELS` in `api/_validation.ts` and the `submissions_grade_level_values` CHECK).
+- `api/_lib.ts` — new `export interface AdminRoleResult { role: AdminRole; grade: string | null }`.
+- `api/admin/verify.ts` — 200 response widens from `{ ok: true }` to `{ ok: true, role: AdminRole }`; 403/503 shapes unchanged.
+- `src/App.tsx` — new module-level `type AdminRole = 'main' | 'engineering' | 'medical';` + `ADMIN_LOGIN_META: Record<AdminRole, { title, subtitle, badge, badgeTitle }>`; new state `isAdviserMenuOpen`, `loginTarget`, `adminRole`.
 
 ## Files
 
-### New files
+**Backend (modified):**
+- `api/_lib.ts` — `AdminRole`, `ADVISER_GRADE`, `AdminRoleResult`, `resolveAdminRole(username, password)` (timing-safe compare against all three pairs; main → `grade: null`); `isAdminAuthorized` now delegates to `resolveAdminRole` (any valid pair authorized); `getAllSubmissions(gradeFilter?)` and `getEvaluations(gradeFilter?)` apply `.eq('grade_level', ...)` when a filter is provided.
+- `api/admin/verify.ts` — returns caller's `role` on 200.
+- `api/admin/submissions.ts`, `api/admin/reports.ts`, `api/admin/export-csv.ts` — resolve role from request headers and pass the strand grade filter into the query helpers (CSV export auto-scoped).
+- `.env.example` — documents `ENGINEERING_ADMIN_USERNAME`, `ENGINEERING_ADMIN_PASSWORD`, `MEDICAL_ADMIN_USERNAME`, `MEDICAL_ADMIN_PASSWORD` (placeholders only — real values are server env vars / local `.env`, gitignored).
+- `README.md` — env table extended with the four adviser variables and their strand scopes.
+**Frontend (modified):**
+- `src/App.tsx`
+  1. lucide-react import gains `ChevronDown, ChevronUp`.
+  2. Hamburger menu: `Admin Login` now sets `loginTarget('main')` and clears login error; new `Adviser` parent row (Users icon + chevron, `aria-expanded`) with an `AnimatePresence` expand revealing `Engineering Admin` and `Medical Admin` sub-buttons (each sets `loginTarget`, clears error, closes menu, opens modal).
+  3. Admin modal: dynamic title/subtitle from `ADMIN_LOGIN_META[loginTarget]`; submit flow verifies role via `verifyAdminRole` → `setAdminRole` → existing `fetchAdminData` (server already filters) → navigates.
+  4. Admin navbar: role badge chip next to FOCUS title when `adminRole !== 'main'`.
+  5. Both Sign Out buttons reset `adminRole('main')`.
+  6. Overlay + X close also reset `isAdviserMenuOpen`.
 
-- `/Users/klintvincentlloren/Documents/WOW/focus-study-fatigue-indicator (1)/supabase/migrations/20260913_remove_adviser_grades.sql`
-  - Drops the existing `submissions_grade_level_values` constraint if present, re-adds it with only the two strand values, marked `NOT VALID` (legacy rows stay readable and are applied only to new inserts/updates). Idempotent; mirrors `20260909_add_grade_levels.sql` pattern.
-- `/Users/klintvincentlloren/Documents/WOW/focus-study-fatigue-indicator (1)/implementation_plan.md`
-  - This plan document.
+**Tests (modified):**
+- `scripts/verify-hardening.ts` — adds the four test env vars, asserts verify returns `main`/`engineering`/`medical` per credential pair, 403 on wrong, and that `ADVISER_GRADE` aligns with `GRADE_LEVELS`.
 
-### Modified files
-
-- `/Users/klintvincentlloren/Documents/WOW/focus-study-fatigue-indicator (1)/src/App.tsx`
-  - Lines 867–871: remove the `Grade 11 STEM Adviser` and `Grade 12 STEM Adviser` entries. `grid-cols-2` keeps working; no CSS change.
-  - Line 1909 admin "Grade Level" breakdown intentionally unchanged (zero-count grades already `return null`, preserving legacy visibility).
-- `/Users/klintvincentlloren/Documents/WOW/focus-study-fatigue-indicator (1)/api/_validation.ts`
-  - Line 3: trim `GRADE_LEVELS`.
-- `/Users/klintvincentlloren/Documents/WOW/focus-study-fatigue-indicator (1)/scripts/verify-hardening.ts`
-  - Line 51: baseline `validSubmit.grade_level` → `'11 Academic-Engineering'`.
-  - Lines after 78: keep strand assertions; add rejects for `Grade 11` / `Grade 12`.
-- `/Users/klintvincentlloren/Documents/WOW/focus-study-fatigue-indicator (1)/supabase-schema.sql`
-  - Line 56: CHECK → `('11 Academic-Engineering', '11 Academic-Medical')`.
-
-### Unchanged (intentional)
-
-- `api/_lib.ts`, `api/submit.ts`, `api/evaluate.ts`, `api/admin/*` — CSV uses dynamic headers; admin reads unaffected.
-- `src/types/supabase.ts` — `grade_level` stays `string`.
 ## Functions
 
-### Modified
-
-- `parseSubmitPayload(body)` in `api/_validation.ts:86` — no signature change. The existing `isOneOf(input.grade_level, GRADE_LEVELS)` check now rejects `Grade 11` / `Grade 12` with `Invalid grade_level.`, which `api/submit.ts` surfaces as HTTP 400. No business-logic change required.
-
-### New
-
-- None (the migration is declarative SQL, not a function).
-
-### Removed
-
-- None. Legacy `Grade 11` / `Grade 12` values are intentionally not rewritten; they remain valid historical data.
+- **New** `resolveAdminRole(rawUsername, rawPassword): AdminRoleResult | null` in `api/_lib.ts` — single timing-safe comparison point for all three pairs; unconfigured pairs never match (fail closed).
+- **New** `verifyAdminRole(username, password): Promise<{ ok, role? }>` in `src/App.tsx` — `POST /api/admin/verify`, normalizes role to the union, silent failure.
+- **Modified** `isAdminAuthorized(req)` — delegates to `resolveAdminRole`; behavior superset of before.
+- **Modified** `getAllSubmissions(gradeFilter?)`, `getEvaluations(gradeFilter?)` — optional strand `.eq`; default preserves current behavior.
+- **Modified** modal `onSubmit` in `src/App.tsx` — verify-before-fetch flow with `isAdminLoading` guard.
+- **Removed:** none.
 
 ## Classes
 
-No class-level changes. This is a React functional-component app; the Grade Level selector is inline JSX in `App.tsx`.
+None — functional-component frontend; no backend classes.
 
 ## Dependencies
 
-None. No new packages, no version changes.
+None. `ChevronDown`/`ChevronUp` come from the already-installed `lucide-react` (used in `PercentageBreakdownCard.tsx`).
 
 ## Testing
 
-- `npm run verify:api` — `tsx scripts/verify-hardening.ts` must pass:
-  - valid submit uses `grade_level: '11 Academic-Engineering'`;
-  - both strand values parse;
-  - `'11 Academic'` (unlisted), `'Grade 11'`, and `'Grade 12'` all fail;
-  - all existing assertions (name normalization, NULL eval scores, tokens, auth) remain green.
-- `npm run lint` — `tsc --noEmit` over `src` and `api`.
-- Manual UI check: Part I shows exactly 2 Grade Level buttons; CONTINUE still requires age/sex/grade selection.
-- Manual API check: `POST /api/submit` with `grade_level: 'Grade 12'` returns 400; with a strand value returns 200.
-- Manual DB check (after applying migration): inserting a strand succeeds; inserting `Grade 11` fails the CHECK. Existing `Grade 11` rows still read back in admin Live Results / Reports.
-- Edge case: an `UPDATE` rewriting a legacy row's `grade_level` back to `Grade 11` now fails the CHECK — intended.
+- `npm run verify:api` — existing suite plus new role assertions must pass.
+- `npm run lint` (`tsc --noEmit`) and `npm run build` — must pass.
+- Manual matrix (requires the four env vars set): hamburger → Adviser expands/collapses; Engineering login shows badge + only `11 Academic-Engineering` rows across Dashboard/Respondents/Reports/CSV + refresh stays scoped; Medical likewise; shared Admin Login shows no badge and sees all; wrong password shows existing error; Sign Out clears badge; mobile viewport behaves the same.
+- Edge cases: only main pair configured → adviser logins fail closed with "Incorrect username or password."; legacy `Grade 11`/`Grade 12` rows visible only to main (server filter excludes them for advisers); role cannot be forged client-side (comes only from `/api/admin/verify`).
 
 ## Implementation Order
 
-1. Update `api/_validation.ts` — trim `GRADE_LEVELS` to the 2 strand values.
-2. Update `src/App.tsx` — remove the two adviser grade buttons from Part I.
-3. Update `scripts/verify-hardening.ts` — swap the baseline value and add negative assertions for `Grade 11` / `Grade 12`.
-4. Create migration `supabase/migrations/20260913_remove_adviser_grades.sql` and sync the canonical `supabase-schema.sql`.
-5. Run `npm run verify:api` and `npm run lint`; fix any failures.
-6. Manual UI/API verification; apply the migration to Supabase (dashboard SQL editor or `supabase db push`).
+1. `api/_lib.ts` — role type, grade map, `resolveAdminRole`, `isAdminAuthorized` delegation, filtered queries.
+2. `api/admin/verify.ts` → role; `submissions.ts`/`reports.ts`/`export-csv.ts` → role + grade filter.
+3. `.env.example` + `README.md`.
+4. `scripts/verify-hardening.ts` — env + role assertions; run `verify:api`.
+5. `src/App.tsx` — icons, menu dropdown, modal role context, verify-before-fetch, navbar badge, sign-out reset.
+6. `lint` + `build` + manual login/filter matrix.

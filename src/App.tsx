@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Menu, Lightbulb, Lock, Shield, ArrowLeft, ArrowRight, Check, ChevronLeft, Smartphone, Wind, Moon, Sun, User, X, Search, Users, CheckCircle, Clock, Star, Info, TrendingUp, Download, Filter, Table, ChevronRight, AlertCircle, MoreVertical, ArrowUp, ArrowDown, FastForward, Sparkles, Heart, Brain, Coffee, CheckCircle2, Eye, EyeOff, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Menu, Lightbulb, Lock, Shield, ArrowLeft, ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Smartphone, Wind, Moon, Sun, User, X, Search, Users, CheckCircle, Clock, Star, Info, TrendingUp, Download, Filter, Table, AlertCircle, MoreVertical, ArrowUp, ArrowDown, FastForward, Sparkles, Heart, Brain, Coffee, CheckCircle2, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import SkeletalResultsLoader from './components/SkeletalResultsLoader';
@@ -142,6 +142,14 @@ const simpleSuggestionsList: SuggestionItem[] = [
 ];
 
 type Screen = 'landing' | 'howItWorks' | 'consent' | 'demographic' | 'physicalFatigue' | 'cognitiveFatigue' | 'lifestyle' | 'evaluation' | 'analyzing' | 'results' | 'adminDashboard';
+
+type AdminRole = 'main' | 'engineering' | 'medical';
+
+const ADMIN_LOGIN_META: Record<AdminRole, { title: string; subtitle: string; badge: string; badgeTitle: string }> = {
+  main: { title: 'Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: '', badgeTitle: '' },
+  engineering: { title: 'Engineering Admin Access', subtitle: 'Only 11 Academic-Engineering responses are shown to this account.', badge: 'Engineering Adviser', badgeTitle: 'Engineering Adviser · 11 Academic-Engineering only' },
+  medical: { title: 'Medical Admin Access', subtitle: 'Only 11 Academic-Medical responses are shown to this account.', badge: 'Medical Adviser', badgeTitle: 'Medical Adviser · 11 Academic-Medical only' },
+};
 
 export function calculateLocalScore(answers: Record<string, number>) {
   const pf_scores = ['PF1', 'PF2', 'PF3', 'PF4', 'PF5'].map(id => Number(answers[id]) || 2);
@@ -315,8 +323,11 @@ export default function App() {
 
   
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdviserMenuOpen, setIsAdviserMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [loginTarget, setLoginTarget] = useState<AdminRole>('main');
+  const [adminRole, setAdminRole] = useState<AdminRole>('main');
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminInputPassword, setAdminInputPassword] = useState('');
@@ -405,6 +416,26 @@ export default function App() {
       setRespondentsRefreshError('Could not refresh. Check your connection or log in again.');
     }
     setIsRespondentsRefreshing(false);
+  };
+
+  const verifyAdminRole = async (username: string, password: string): Promise<{ ok: boolean; role?: AdminRole; status?: number }> => {
+    try {
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password: password.trim() }),
+      });
+      if (!res.ok) return { ok: false, status: res.status };
+      const data = await res.json();
+      const role = data?.role;
+      return {
+        ok: true,
+        role: role === 'engineering' || role === 'medical' || role === 'main' ? role : 'main',
+      };
+    } catch (err) {
+      console.error('Failed to verify admin role:', err);
+      return { ok: false };
+    }
   };
 
   const fetchAdminData = async (username: string, password: string) => {
@@ -1777,6 +1808,11 @@ export default function App() {
               <div className="flex items-center justify-between h-16 sm:h-20 w-full md:w-auto">
                 <div className="flex items-center gap-8 sm:gap-12">
                   <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[#594A42]">FOCUS</h2>
+                  {adminRole !== 'main' && (
+                    <span title={ADMIN_LOGIN_META[adminRole].badgeTitle} className="items-center gap-2 bg-[#E8D7B8] text-[#594A42] px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap flex">
+                      {ADMIN_LOGIN_META[adminRole].badge}
+                    </span>
+                  )}
                   <div className="hidden md:flex items-center gap-6 text-sm font-semibold">
                     <button onClick={() => setAdminTab('dashboard')} className={`py-1 cursor-pointer whitespace-nowrap transition-colors ${adminTab === 'dashboard' ? 'text-[#594A42] border-b-2 border-[#594A42]' : 'text-[#594A42]/60 hover:text-[#594A42] border-b-2 border-transparent'}`}>Dashboard</button>
                     <button onClick={() => setAdminTab('respondents')} className={`py-1 cursor-pointer whitespace-nowrap transition-colors ${adminTab === 'respondents' ? 'text-[#594A42] border-b-2 border-[#594A42]' : 'text-[#594A42]/60 hover:text-[#594A42] border-b-2 border-transparent'}`}>Respondents</button>
@@ -1786,7 +1822,7 @@ export default function App() {
                 </div>
                 {/* Mobile Right Tools */}
                 <div className="flex items-center gap-4 md:hidden">
-                  <button onClick={() => setCurrentScreen('landing')} className="text-xs sm:text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
+                  <button onClick={() => { setAdminRole('main'); setCurrentScreen('landing'); }} className="text-xs sm:text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
                   <div className="w-8 h-8 rounded-full bg-[#E8E3D9] overflow-hidden border border-[#C5BDB6]">
                     <div className="w-full h-full bg-[#594A42]/20 flex items-center justify-center">
                       <User className="w-4 h-4 text-[#594A42]" />
@@ -1817,7 +1853,7 @@ export default function App() {
                     <Download className="w-4 h-4" /> Download as CSV
                   </button>
                 ) : null}
-                <button onClick={() => setCurrentScreen('landing')} className="text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
+                <button onClick={() => { setAdminRole('main'); setCurrentScreen('landing'); }} className="text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
                 <div className="w-8 h-8 rounded-full bg-[#E8E3D9] overflow-hidden border border-[#C5BDB6]">
                   <div className="w-full h-full bg-[#594A42]/20 flex items-center justify-center">
                     <User className="w-4 h-4 text-[#594A42]" />
@@ -2309,7 +2345,7 @@ export default function App() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              onClick={() => setIsMenuOpen(false)}
+              onClick={() => { setIsMenuOpen(false); setIsAdviserMenuOpen(false); }}
               className="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm"
             />
             <motion.div 
@@ -2321,7 +2357,7 @@ export default function App() {
             >
               <div className="p-6 border-b border-[#E8E3D9] flex justify-between items-center">
                 <h3 className="font-serif text-2xl font-bold tracking-wide text-[#332A25]">MENU</h3>
-                <button onClick={() => setIsMenuOpen(false)} className="hover:opacity-70 transition-opacity cursor-pointer">
+                <button onClick={() => { setIsMenuOpen(false); setIsAdviserMenuOpen(false); }} className="hover:opacity-70 transition-opacity cursor-pointer">
                   <X className="w-6 h-6 text-[#594A42]" />
                 </button>
               </div>
@@ -2336,6 +2372,8 @@ export default function App() {
                 <button 
                   onClick={() => {
                     setIsMenuOpen(false);
+                    setLoginTarget('main');
+                    setAdminLoginError('');
                     setIsAdminModalOpen(true);
                   }}
                   className="w-full px-8 py-5 flex items-center gap-4 text-[#594A42] hover:bg-[#F4F0E6] transition-colors text-left cursor-pointer"
@@ -2343,6 +2381,55 @@ export default function App() {
                   <User className="w-5 h-5" />
                   <span className="font-bold text-sm tracking-widest uppercase">Admin Login</span>
                 </button>
+                <button
+                  onClick={() => setIsAdviserMenuOpen(!isAdviserMenuOpen)}
+                  aria-expanded={isAdviserMenuOpen}
+                  className="w-full px-8 py-5 flex items-center justify-between text-[#594A42] hover:bg-[#F4F0E6] transition-colors text-left cursor-pointer"
+                >
+                  <span className="flex items-center gap-4">
+                    <Users className="w-5 h-5" />
+                    <span className="font-bold text-sm tracking-widest uppercase">Adviser</span>
+                  </span>
+                  {isAdviserMenuOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
+                <AnimatePresence>
+                  {isAdviserMenuOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <button
+                        onClick={() => {
+                          setIsAdviserMenuOpen(false);
+                          setIsMenuOpen(false);
+                          setLoginTarget('engineering');
+                          setAdminLoginError('');
+                          setIsAdminModalOpen(true);
+                        }}
+                        className="w-full pl-14 py-3.5 flex items-center gap-3 text-[#594A42] hover:bg-[#F4F0E6] transition-colors text-left cursor-pointer"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-[#4F7CD9]" />
+                        <span className="font-bold text-sm">Engineering Admin</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsAdviserMenuOpen(false);
+                          setIsMenuOpen(false);
+                          setLoginTarget('medical');
+                          setAdminLoginError('');
+                          setIsAdminModalOpen(true);
+                        }}
+                        className="w-full pl-14 py-3.5 flex items-center gap-3 text-[#594A42] hover:bg-[#F4F0E6] transition-colors text-left cursor-pointer"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-[#B05B3A]" />
+                        <span className="font-bold text-sm">Medical Admin</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </>
@@ -2377,15 +2464,32 @@ export default function App() {
                 <Lock className="w-6 h-6 text-[#594A42]" />
               </div>
               <h3 className="font-serif text-2xl font-bold tracking-wide text-[#332A25] mb-2 uppercase">
-                Admin Access
+                {ADMIN_LOGIN_META[loginTarget].title}
               </h3>
               <p className="text-xs text-[#594A42]/70 text-center mb-8 font-medium">
-                Please enter your credentials to access the admin dashboard.
+                {ADMIN_LOGIN_META[loginTarget].subtitle}
               </p>
               
               <form className="w-full flex flex-col gap-4" onSubmit={async (e) => {
                 e.preventDefault();
+                if (isAdminLoading) return;
+                setIsAdminLoading(true);
+                setAdminLoginError('');
+                const verification = await verifyAdminRole(adminInputUsername, adminInputPassword);
+                if (!verification.ok || !verification.role) {
+                  if (verification.status === 503) {
+                    setAdminLoginError('Admin login is not configured on the server.');
+                  } else if (verification.status === 401 || verification.status === 403) {
+                    setAdminLoginError('Incorrect username or password.');
+                  } else {
+                    setAdminLoginError('Network or server error while connecting.');
+                  }
+                  setIsAdminLoading(false);
+                  return;
+                }
+                setAdminRole(verification.role);
                 const success = await fetchAdminData(adminInputUsername, adminInputPassword);
+                setIsAdminLoading(false);
                 if (success) {
                   setIsAdminModalOpen(false);
                   setCurrentScreen('adminDashboard');

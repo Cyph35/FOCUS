@@ -1,4 +1,4 @@
-import { getAllSubmissions, isAdminAuthorized, sendCsv, sendJson } from '../_lib.js';
+import { getAllSubmissions, isAdminAuthorized, resolveAdminRole, sendCsv, sendJson } from '../_lib.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -10,7 +10,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const submissions = await getAllSubmissions();
+    const roleResult = resolveAdminRole(req.headers?.['x-admin-username'], req.headers?.['x-admin-password']);
+    const submissions = await getAllSubmissions(roleResult?.grade ?? undefined);
 
     if (!submissions.length) {
       return sendJson(res, 404, { error: 'No data to export' });

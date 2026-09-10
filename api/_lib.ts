@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { GRADE_LEVELS } from './_validation.js';
 import type { SubmitPayload } from './_validation.js';
 
 export interface SubmissionRecord {
@@ -78,6 +79,52 @@ export function getAdminCredentials(): { username: string; password: string } | 
   return { username, password };
 }
 
+export type AdminRole = 'main' | 'engineering' | 'medical';
+
+export const ADVISER_GRADE: Record<Exclude<AdminRole, 'main'>, (typeof GRADE_LEVELS)[number]> = {
+  engineering: '11 Academic-Engineering',
+  medical: '11 Academic-Medical',
+};
+
+export interface AdminRoleResult {
+  role: AdminRole;
+  grade: string | null;
+}
+
+function getAdviserCredentials(prefix: 'ENGINEERING' | 'MEDICAL'): { username: string; password: string } | null {
+  const username = readEnv(`${prefix}_ADMIN_USERNAME`);
+  const password = readEnv(`${prefix}_ADMIN_PASSWORD`);
+  if (!username || !password) {
+    return null;
+  }
+  return { username, password };
+}
+
+export function resolveAdminRole(rawUsername: unknown, rawPassword: unknown): AdminRoleResult | null {
+  const username = String(rawUsername || '').trim();
+  const password = String(rawPassword || '').trim();
+  if (!username || !password) {
+    return null;
+  }
+
+  const main = getAdminCredentials();
+  if (main && safeEqual(username, main.username) && safeEqual(password, main.password)) {
+    return { role: 'main', grade: null };
+  }
+
+  const engineering = getAdviserCredentials('ENGINEERING');
+  if (engineering && safeEqual(username, engineering.username) && safeEqual(password, engineering.password)) {
+    return { role: 'engineering', grade: ADVISER_GRADE.engineering };
+  }
+
+  const medical = getAdviserCredentials('MEDICAL');
+  if (medical && safeEqual(username, medical.username) && safeEqual(password, medical.password)) {
+    return { role: 'medical', grade: ADVISER_GRADE.medical };
+  }
+
+  return null;
+}
+
 function getEvaluationTokenSecret(): string | null {
   const secret = readEnv('EVALUATION_TOKEN_SECRET');
   return secret || null;
@@ -124,14 +171,10 @@ export function calculateScore(body: Pick<SubmitPayload, 'pf1' | 'pf2' | 'pf3' |
 }
 
 export function isAdminAuthorized(req: { headers?: Record<string, unknown> }) {
-  const credentials = getAdminCredentials();
-  if (!credentials) {
-    return false;
-  }
-
-  const username = String(req.headers?.['x-admin-username'] || '').trim();
-  const password = String(req.headers?.['x-admin-password'] || '').trim();
-  return safeEqual(username, credentials.username) && safeEqual(password, credentials.password);
+  // Any configured credential pair (main, engineering adviser, medical adviser)
+  // is authorized to reach the admin endpoints. Callers should use
+  // resolveAdminRole() when they need to know which scope (grade filter) applies.
+  return resolveAdminRole(req.headers?.['x-admin-username'], req.headers?.['x-admin-password']) !== null;
 }
 
 export function sendJson(res: any, statusCode: number, payload: any) {
@@ -147,15 +190,21 @@ export function sendCsv(res: any, statusCode: number, csv: string, filename = 'f
   res.end(csv);
 }
 
-export async function getAllSubmissions(): Promise<SubmissionRecord[]> {
+export async function getAllSubmissions(gradeFilter?: string): Promise<SubmissionRecord[]> {
   if (!supabase) {
     return [];
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('submissions')
     .select('*')
     .order('submitted_at', { ascending: false });
+
+  if (gradeFilter) {
+    query = query.eq('grade_level', gradeFilter);
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) {
     throw error ?? new Error('Failed to read submissions');
@@ -164,7 +213,7 @@ export async function getAllSubmissions(): Promise<SubmissionRecord[]> {
   return data as SubmissionRecord[];
 }
 
-export async function getEvaluations(): Promise<EvaluationResultRecord[]> {
+export async function getEvaluations(gradeFilter?: string): Promise<EvaluationResultRecord[]> {
   if (!supabase) {
     return [];
   }
@@ -173,7 +222,7 @@ export async function getEvaluations(): Promise<EvaluationResultRecord[]> {
   // completed evaluations. Skipped/partial evaluations stay NULL and
   // are excluded (previously missing scores defaulted to 5, producing
   // phantom "perfect" evaluation rows).
-  const { data, error } = await supabase
+  let query = supabase
     .from('submissions')
     .select('response_id, submitted_at, student_name, age_bracket, sex, grade_level, f1, f2, u1, u2, r1, r2')
     .not('f1', 'is', null)
@@ -183,6 +232,12 @@ export async function getEvaluations(): Promise<EvaluationResultRecord[]> {
     .not('r1', 'is', null)
     .not('r2', 'is', null)
     .order('submitted_at', { ascending: false });
+
+  if (gradeFilter) {
+    query = query.eq('grade_level', gradeFilter);
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) {
     throw error ?? new Error('Failed to read evaluation results');

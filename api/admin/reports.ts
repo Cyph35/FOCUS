@@ -1,4 +1,4 @@
-import { isAdminAuthorized, sendJson, getEvaluations, getSystemErrors } from '../_lib.js';
+import { isAdminAuthorized, sendJson, getEvaluations, getSystemErrors, resolveAdminRole } from '../_lib.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -10,7 +10,8 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const evaluations = await getEvaluations();
+    const roleResult = resolveAdminRole(req.headers?.['x-admin-username'], req.headers?.['x-admin-password']);
+    const evaluations = await getEvaluations(roleResult?.grade ?? undefined);
     const systemErrors = await getSystemErrors();
 
     return sendJson(res, 200, {

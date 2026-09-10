@@ -2,11 +2,15 @@ import submitHandler from '../api/submit';
 import evaluateHandler from '../api/evaluate';
 import verifyHandler from '../api/admin/verify';
 import submissionsHandler from '../api/admin/submissions';
-import { parseSubmitPayload, parseEvaluationPayload } from '../api/_validation';
-import { createEvaluationToken, verifyEvaluationToken } from '../api/_lib';
+import { ADVISER_GRADE, createEvaluationToken, verifyEvaluationToken } from '../api/_lib';
+import { GRADE_LEVELS, parseSubmitPayload, parseEvaluationPayload } from '../api/_validation';
 
 process.env.ADMIN_USERNAME = 'verify-admin';
 process.env.ADMIN_PASSWORD = 'verify-password-not-for-production';
+process.env.ENGINEERING_ADMIN_USERNAME = 'verify-engineering-admin';
+process.env.ENGINEERING_ADMIN_PASSWORD = 'verify-engineering-password';
+process.env.MEDICAL_ADMIN_USERNAME = 'verify-medical-admin';
+process.env.MEDICAL_ADMIN_PASSWORD = 'verify-medical-password';
 process.env.EVALUATION_TOKEN_SECRET = 'verify-evaluation-token-secret-32chars';
 
 type MockRes = {
@@ -136,6 +140,27 @@ assert(evaluateUnauthorized.statusCode === 401, `Expected evaluate without token
 
 const verifyMissing = await call(verifyHandler, { method: 'POST', body: { username: 'wrong', password: 'wrong' } });
 assert(verifyMissing.statusCode === 403, `Expected admin verify 403, got ${verifyMissing.statusCode}`);
+
+// Adviser role resolution: each credential pair must map to the right role.
+const verifyMain = await call(verifyHandler, { method: 'POST', body: { username: 'verify-admin', password: 'verify-password-not-for-production' } });
+assert(verifyMain.statusCode === 200 && verifyMain.json?.role === 'main', `Expected main verify 200 + role main, got ${verifyMain.statusCode}`);
+const verifyEngineering = await call(verifyHandler, { method: 'POST', body: { username: 'verify-engineering-admin', password: 'verify-engineering-password' } });
+assert(verifyEngineering.statusCode === 200 && verifyEngineering.json?.role === 'engineering', `Expected engineering verify 200 + role engineering, got ${verifyEngineering.statusCode}`);
+const verifyMedical = await call(verifyHandler, { method: 'POST', body: { username: 'verify-medical-admin', password: 'verify-medical-password' } });
+assert(verifyMedical.statusCode === 200 && verifyMedical.json?.role === 'medical', `Expected medical verify 200 + role medical, got ${verifyMedical.statusCode}`);
+
+// Adviser grade map must stay aligned with the API allow-list.
+assert(
+  ADVISER_GRADE.engineering === '11 Academic-Engineering' &&
+  ADVISER_GRADE.medical === '11 Academic-Medical',
+  'Expected ADVISER_GRADE to map engineering/medical to their strand values'
+);
+assert(
+  GRADE_LEVELS.length === 2 &&
+  GRADE_LEVELS.includes(ADVISER_GRADE.engineering) &&
+  GRADE_LEVELS.includes(ADVISER_GRADE.medical),
+  'Expected ADVISER_GRADE values to match GRADE_LEVELS allow-list'
+);
 
 const submissionsUnauthorized = await call(submissionsHandler, { method: 'GET', headers: {} });
 assert(submissionsUnauthorized.statusCode === 401, `Expected admin submissions 401, got ${submissionsUnauthorized.statusCode}`);

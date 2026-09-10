@@ -1,4 +1,4 @@
-import { getAdminCredentials, isAdminAuthorized, sendJson } from '../_lib.js';
+import { getAdminCredentials, isAdminAuthorized, resolveAdminRole, sendJson } from '../_lib.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -18,5 +18,6 @@ export default async function handler(req: any, res: any) {
     return sendJson(res, 403, { ok: false, error: 'Incorrect credentials' });
   }
 
-  return sendJson(res, 200, { ok: true });
+  const roleResult = resolveAdminRole(username, password);
+  return sendJson(res, 200, { ok: true, role: roleResult ? roleResult.role : 'main' });
 }

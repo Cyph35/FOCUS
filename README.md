@@ -36,8 +36,12 @@ Set these in Vercel → Settings → Environment Variables for Production and Pr
 
 | Name | Where it is used | Notes |
 | --- | --- | --- |
-| `ADMIN_USERNAME` | Server admin auth | No default. App denies admin access if missing. |
+| `ADMIN_USERNAME` | Server admin auth | No default. App denies admin access if missing. Sees ALL strands. |
 | `ADMIN_PASSWORD` | Server admin auth | No default. Use a long unique password. |
+| `ENGINEERING_ADMIN_USERNAME` | Engineering adviser auth | Optional but recommended. Only sees `11 Academic-Engineering` responses. |
+| `ENGINEERING_ADMIN_PASSWORD` | Engineering adviser auth | Long random password. Paired env var above. |
+| `MEDICAL_ADMIN_USERNAME` | Medical adviser auth | Optional but recommended. Only sees `11 Academic-Medical` responses. |
+| `MEDICAL_ADMIN_PASSWORD` | Medical adviser auth | Long random password. Paired env var above. |
 | `EVALUATION_TOKEN_SECRET` | Signed evaluation writes | HMAC secret. Use 32+ random characters. |
 | `SUPABASE_URL` | Server | Project URL. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server only | Never expose in `VITE_*` or client code. |
