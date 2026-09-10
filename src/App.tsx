@@ -329,6 +329,8 @@ export default function App() {
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [isReportsRefreshing, setIsReportsRefreshing] = useState(false);
   const [reportsRefreshError, setReportsRefreshError] = useState('');
+  const [isRespondentsRefreshing, setIsRespondentsRefreshing] = useState(false);
+  const [respondentsRefreshError, setRespondentsRefreshError] = useState('');
   
   const fetchReportsData = async (username: string, password: string): Promise<boolean> => {
     try {
@@ -362,9 +364,7 @@ export default function App() {
     setIsReportsRefreshing(false);
   };
 
-  const fetchAdminData = async (username: string, password: string) => {
-    setIsAdminLoading(true);
-    setAdminLoginError('');
+  const fetchRespondentsData = async (username: string, password: string): Promise<{ ok: boolean; status?: number }> => {
     try {
       const res = await fetch('/api/admin/submissions', {
         headers: {
@@ -373,21 +373,9 @@ export default function App() {
         }
       });
       if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-          setAdminLoginError('Incorrect username or password.');
-        } else {
-          setAdminLoginError(`Unable to connect (Status ${res.status}).`);
-        }
-        setIsAdminLoading(false);
-        return false;
+        return { ok: false, status: res.status };
       }
       const data = await res.json();
-      
-      try {
-        await fetchReportsData(username, password);
-      } catch (err) {
-        console.error('Failed to fetch reports:', err);
-      }
       // map DB format to frontend table format
       const mapped = Array.isArray(data) ? data.map((row: any) => ({
         id: row.response_id || 'RSP-ANON',
@@ -401,6 +389,45 @@ export default function App() {
         raw: row.raw_total_score ?? ((row.pf1 ?? 1) + (row.pf2 ?? 1) + (row.pf3 ?? 1) + (row.pf4 ?? 1) + (row.pf5 ?? 1) + (row.cf1 ?? 1) + (row.cf2 ?? 1) + (row.cf3 ?? 1) + (row.cf4 ?? 1) + (row.cf5 ?? 1))
       })) : [];
       setDbRespondents(mapped);
+      return { ok: true };
+    } catch (err) {
+      console.error('Failed to fetch respondents:', err);
+      return { ok: false };
+    }
+  };
+
+  const handleRefreshRespondents = async () => {
+    if (isRespondentsRefreshing || !adminUsername || !adminPassword) return;
+    setIsRespondentsRefreshing(true);
+    setRespondentsRefreshError('');
+    const result = await fetchRespondentsData(adminUsername, adminPassword);
+    if (!result.ok) {
+      setRespondentsRefreshError('Could not refresh. Check your connection or log in again.');
+    }
+    setIsRespondentsRefreshing(false);
+  };
+
+  const fetchAdminData = async (username: string, password: string) => {
+    setIsAdminLoading(true);
+    setAdminLoginError('');
+    try {
+      const result = await fetchRespondentsData(username, password);
+      if (!result.ok) {
+        if (result.status === 401 || result.status === 403) {
+          setAdminLoginError('Incorrect username or password.');
+        } else if (result.status !== undefined) {
+          setAdminLoginError(`Unable to connect (Status ${result.status}).`);
+        } else {
+          setAdminLoginError('Network or server error while connecting.');
+        }
+        setIsAdminLoading(false);
+        return false;
+      }
+      try {
+        await fetchReportsData(username, password);
+      } catch (err) {
+        console.error('Failed to fetch reports:', err);
+      }
       setAdminUsername(username.trim());
       setAdminPassword(password.trim());
       return true;
@@ -1976,12 +2003,27 @@ export default function App() {
                 {/* Table Container */}
                 <div className="bg-[#FAF8F5] rounded-2xl border border-[#E8E3D9] overflow-hidden flex flex-col shadow-sm w-full">
                   {/* Table Header */}
-                  <div className="p-5 sm:p-6 border-b border-[#E8E3D9] flex items-center gap-4">
+                  <div className="p-5 sm:p-6 border-b border-[#E8E3D9] flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2 font-bold text-[#332A25]">
                       <Table className="w-5 h-5 text-[#594A42]" /> Participant Responses
                     </div>
-                    <div className="bg-[#E8E3D9] text-[#594A42] px-3 py-1 rounded-full text-xs font-bold">
-                      {sortedRespondents.length} Total
+                    <div className="flex items-center gap-3">
+                      {respondentsRefreshError && (
+                        <span className="text-xs font-medium text-[#D94F4F]">{respondentsRefreshError}</span>
+                      )}
+                      <div className="bg-[#E8E3D9] text-[#594A42] px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
+                        {sortedRespondents.length} Total
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRefreshRespondents}
+                        disabled={isRespondentsRefreshing}
+                        title="Refresh responses"
+                        aria-label="Refresh participant responses"
+                        className={`w-8 h-8 rounded-full border border-[#E8E3D9] bg-white flex items-center justify-center text-[#594A42] transition-colors ${isRespondentsRefreshing ? 'opacity-60 cursor-wait' : 'hover:bg-[#F4F0E6] hover:border-[#594A42] cursor-pointer'}`}
+                      >
+                        <RefreshCw className={`w-4 h-4 ${isRespondentsRefreshing ? 'animate-spin' : ''}`} />
+                      </button>
                     </div>
                   </div>
 
