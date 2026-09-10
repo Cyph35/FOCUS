@@ -147,8 +147,8 @@ type AdminRole = 'main' | 'engineering' | 'medical';
 
 const ADMIN_LOGIN_META: Record<AdminRole, { title: string; subtitle: string; badge: string; badgeTitle: string }> = {
   main: { title: 'Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: '', badgeTitle: '' },
-  engineering: { title: 'Engineering Admin Access', subtitle: 'Only 11 Academic-Engineering responses are shown to this account.', badge: 'Engineering Adviser', badgeTitle: 'Engineering Adviser · 11 Academic-Engineering only' },
-  medical: { title: 'Medical Admin Access', subtitle: 'Only 11 Academic-Medical responses are shown to this account.', badge: 'Medical Adviser', badgeTitle: 'Medical Adviser · 11 Academic-Medical only' },
+  engineering: { title: 'Engineering Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: 'Engineering Adviser', badgeTitle: 'Engineering Adviser · 11 Academic-Engineering only' },
+  medical: { title: 'Medical Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: 'Medical Adviser', badgeTitle: 'Medical Adviser · 11 Academic-Medical only' },
 };
 
 export function calculateLocalScore(answers: Record<string, number>) {
@@ -1822,7 +1822,7 @@ export default function App() {
                 </div>
                 {/* Mobile Right Tools */}
                 <div className="flex items-center gap-4 md:hidden">
-                  <button onClick={() => { setAdminRole('main'); setCurrentScreen('landing'); }} className="text-xs sm:text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
+                  <button onClick={() => { setAdminRole('main'); setAdminUsername(''); setAdminPassword(''); setAdminInputUsername(''); setAdminInputPassword(''); setAdminLoginError(''); setCurrentScreen('landing'); }} className="text-xs sm:text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
                   <div className="w-8 h-8 rounded-full bg-[#E8E3D9] overflow-hidden border border-[#C5BDB6]">
                     <div className="w-full h-full bg-[#594A42]/20 flex items-center justify-center">
                       <User className="w-4 h-4 text-[#594A42]" />
@@ -1853,7 +1853,7 @@ export default function App() {
                     <Download className="w-4 h-4" /> Download as CSV
                   </button>
                 ) : null}
-                <button onClick={() => { setAdminRole('main'); setCurrentScreen('landing'); }} className="text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
+                <button onClick={() => { setAdminRole('main'); setAdminUsername(''); setAdminPassword(''); setAdminInputUsername(''); setAdminInputPassword(''); setAdminLoginError(''); setCurrentScreen('landing'); }} className="text-sm font-semibold text-[#594A42] hover:opacity-70 transition-opacity cursor-pointer">Sign Out</button>
                 <div className="w-8 h-8 rounded-full bg-[#E8E3D9] overflow-hidden border border-[#C5BDB6]">
                   <div className="w-full h-full bg-[#594A42]/20 flex items-center justify-center">
                     <User className="w-4 h-4 text-[#594A42]" />
