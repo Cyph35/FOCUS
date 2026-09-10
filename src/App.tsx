@@ -865,8 +865,6 @@ export default function App() {
                   <label className="text-sm font-bold text-[#594A42]">Grade Level</label>
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     {[
-                      { value: 'Grade 11', label: 'Grade 11 STEM Adviser' },
-                      { value: 'Grade 12', label: 'Grade 12 STEM Adviser' },
                       { value: '11 Academic-Engineering', label: '11 Academic-Engineering' },
                       { value: '11 Academic-Medical', label: '11 Academic-Medical' }
                     ].map(grade => (

@@ -48,7 +48,7 @@ const validSubmit = {
   consent_given: true,
   age_bracket: '17-18',
   sex: 'Female',
-  grade_level: 'Grade 12',
+  grade_level: '11 Academic-Engineering',
   pf1: 2,
   pf2: 2,
   pf3: 2,
@@ -81,6 +81,10 @@ const parsedMedical = parseSubmitPayload({ ...validSubmit, grade_level: '11 Acad
 assert(parsedMedical.ok, 'Expected 11 Academic-Medical to parse');
 const invalidStrand = parseSubmitPayload({ ...validSubmit, grade_level: '11 Academic' });
 assert(!invalidStrand.ok, 'Expected unlisted grade_level to fail');
+const removedGrade11 = parseSubmitPayload({ ...validSubmit, grade_level: 'Grade 11' });
+assert(!removedGrade11.ok, 'Expected removed Grade 11 grade_level to fail');
+const removedGrade12 = parseSubmitPayload({ ...validSubmit, grade_level: 'Grade 12' });
+assert(!removedGrade12.ok, 'Expected removed Grade 12 grade_level to fail');
 
 const invalidScore = parseSubmitPayload({ ...validSubmit, pf1: 9 });
 assert(!invalidScore.ok, 'Expected out-of-range pf1 to fail');
