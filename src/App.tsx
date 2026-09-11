@@ -143,13 +143,14 @@ const simpleSuggestionsList: SuggestionItem[] = [
 
 type Screen = 'landing' | 'howItWorks' | 'consent' | 'demographic' | 'physicalFatigue' | 'cognitiveFatigue' | 'lifestyle' | 'evaluation' | 'analyzing' | 'results' | 'adminDashboard';
 
-type AdminRole = 'main' | 'engineering' | 'medical' | 'stem';
+type AdminRole = 'main' | 'engineering' | 'medical' | 'stem' | 'abm';
 
 const ADMIN_LOGIN_META: Record<AdminRole, { title: string; subtitle: string; badge: string; badgeTitle: string }> = {
   main: { title: 'Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: '', badgeTitle: '' },
   engineering: { title: 'Engineering Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: 'Engineering Adviser', badgeTitle: 'Engineering Adviser · 11 Academic-Engineering only' },
   medical: { title: 'Medical Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: 'Medical Adviser', badgeTitle: 'Medical Adviser · 11 Academic-Medical only' },
   stem: { title: 'STEM Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: 'STEM Adviser', badgeTitle: 'STEM Adviser · 12 Academic-STEM only' },
+  abm: { title: 'ABM Admin Access', subtitle: 'Please enter your credentials to access the admin dashboard.', badge: 'ABM Adviser', badgeTitle: 'ABM Adviser · 11 Academic-ABM only' },
 };
 
 export function calculateLocalScore(answers: Record<string, number>) {
@@ -431,7 +432,7 @@ export default function App() {
       const role = data?.role;
       return {
         ok: true,
-        role: role === 'engineering' || role === 'medical' || role === 'stem' || role === 'main' ? role : 'main',
+        role: role === 'engineering' || role === 'medical' || role === 'stem' || role === 'abm' || role === 'main' ? role : 'main',
       };
     } catch (err) {
       console.error('Failed to verify admin role:', err);
@@ -922,11 +923,12 @@ export default function App() {
                 {/* Grade Level */}
                 <div className="flex flex-col gap-3">
                   <label className="text-sm font-bold text-[#594A42]">Grade Level</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     {[
                       { value: '11 Academic-Engineering', label: '11 Academic-Engineering' },
                       { value: '11 Academic-Medical', label: '11 Academic-Medical' },
-                      { value: '12 Academic-STEM', label: '12 Academic-STEM' }
+                      { value: '12 Academic-STEM', label: '12 Academic-STEM' },
+                      { value: '11 Academic-ABM', label: '11 Academic-ABM' }
                     ].map(grade => (
                       <button
                         key={grade.value}
@@ -1969,7 +1971,7 @@ export default function App() {
                         {dbRespondents.length === 0 ? (
                           <div className="text-sm font-semibold text-[#594A42]/60 text-center py-10">No data available</div>
                         ) : (
-                          ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', '11 Academic-Engineering', '11 Academic-Medical', 'Grade 12', 'College'].map(grade => {
+                          ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', '11 Academic-Engineering', '11 Academic-Medical', '12 Academic-STEM', '11 Academic-ABM', 'Grade 12', 'College'].map(grade => {
                             const count = dbRespondents.filter(r => r.grade === grade).length;
                             if (count === 0) return null;
                             const percentage = Math.round((count / dbRespondents.length) * 100);
@@ -2441,6 +2443,19 @@ export default function App() {
                       >
                         <span className="w-2 h-2 rounded-full bg-[#2FA98C]" />
                         <span className="font-bold text-sm">STEM Admin</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsAdviserMenuOpen(false);
+                          setIsMenuOpen(false);
+                          setLoginTarget('abm');
+                          setAdminLoginError('');
+                          setIsAdminModalOpen(true);
+                        }}
+                        className="w-full pl-14 py-3.5 flex items-center gap-3 text-[#594A42] hover:bg-[#F4F0E6] transition-colors text-left cursor-pointer"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-[#7A5C9E]" />
+                        <span className="font-bold text-sm">ABM Admin</span>
                       </button>
                     </motion.div>
                   )}

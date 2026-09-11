@@ -13,6 +13,8 @@ process.env.MEDICAL_ADMIN_USERNAME = 'verify-medical-admin';
 process.env.MEDICAL_ADMIN_PASSWORD = 'verify-medical-password';
 process.env.STEM_ADMIN_USERNAME = 'verify-stem-admin';
 process.env.STEM_ADMIN_PASSWORD = 'verify-stem-password';
+process.env.ABM_ADMIN_USERNAME = 'verify-abm-admin';
+process.env.ABM_ADMIN_PASSWORD = 'verify-abm-password';
 process.env.EVALUATION_TOKEN_SECRET = 'verify-evaluation-token-secret-32chars';
 
 type MockRes = {
@@ -87,6 +89,8 @@ const parsedMedical = parseSubmitPayload({ ...validSubmit, grade_level: '11 Acad
 assert(parsedMedical.ok, 'Expected 11 Academic-Medical to parse');
 const parsedStem = parseSubmitPayload({ ...validSubmit, grade_level: '12 Academic-STEM' });
 assert(parsedStem.ok, 'Expected 12 Academic-STEM to parse');
+const parsedAbm = parseSubmitPayload({ ...validSubmit, grade_level: '11 Academic-ABM' });
+assert(parsedAbm.ok, 'Expected 11 Academic-ABM to parse');
 const invalidStrand = parseSubmitPayload({ ...validSubmit, grade_level: '11 Academic' });
 assert(!invalidStrand.ok, 'Expected unlisted grade_level to fail');
 const removedGrade11 = parseSubmitPayload({ ...validSubmit, grade_level: 'Grade 11' });
@@ -154,19 +158,23 @@ const verifyMedical = await call(verifyHandler, { method: 'POST', body: { userna
 assert(verifyMedical.statusCode === 200 && verifyMedical.json?.role === 'medical', `Expected medical verify 200 + role medical, got ${verifyMedical.statusCode}`);
 const verifyStem = await call(verifyHandler, { method: 'POST', body: { username: 'verify-stem-admin', password: 'verify-stem-password' } });
 assert(verifyStem.statusCode === 200 && verifyStem.json?.role === 'stem', `Expected stem verify 200 + role stem, got ${verifyStem.statusCode}`);
+const verifyAbm = await call(verifyHandler, { method: 'POST', body: { username: 'verify-abm-admin', password: 'verify-abm-password' } });
+assert(verifyAbm.statusCode === 200 && verifyAbm.json?.role === 'abm', `Expected abm verify 200 + role abm, got ${verifyAbm.statusCode}`);
 
 // Adviser grade map must stay aligned with the API allow-list.
 assert(
   ADVISER_GRADE.engineering === '11 Academic-Engineering' &&
   ADVISER_GRADE.medical === '11 Academic-Medical' &&
-  ADVISER_GRADE.stem === '12 Academic-STEM',
-  'Expected ADVISER_GRADE to map engineering/medical/stem to their strand values'
+  ADVISER_GRADE.stem === '12 Academic-STEM' &&
+  ADVISER_GRADE.abm === '11 Academic-ABM',
+  'Expected ADVISER_GRADE to map engineering/medical/stem/abm to their strand values'
 );
 assert(
-  GRADE_LEVELS.length === 3 &&
+  GRADE_LEVELS.length === 4 &&
   GRADE_LEVELS.includes(ADVISER_GRADE.engineering) &&
   GRADE_LEVELS.includes(ADVISER_GRADE.medical) &&
-  GRADE_LEVELS.includes(ADVISER_GRADE.stem),
+  GRADE_LEVELS.includes(ADVISER_GRADE.stem) &&
+  GRADE_LEVELS.includes(ADVISER_GRADE.abm),
   'Expected ADVISER_GRADE values to match GRADE_LEVELS allow-list'
 );
 
